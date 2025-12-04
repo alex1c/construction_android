@@ -30,6 +30,10 @@ class CalculatorViewModel(calculatorId: String) : ViewModel() {
 	private val _results = MutableStateFlow<Map<String, Double>>(emptyMap())
 	val results: StateFlow<Map<String, Double>> = _results.asStateFlow()
 	
+	// Calculation details (text descriptions)
+	private val _calculationDetails = MutableStateFlow<String?>(null)
+	val calculationDetails: StateFlow<String?> = _calculationDetails.asStateFlow()
+	
 	// Error state
 	private val _error = MutableStateFlow<String?>(null)
 	val error: StateFlow<String?> = _error.asStateFlow()
@@ -118,9 +122,12 @@ class CalculatorViewModel(calculatorId: String) : ViewModel() {
 			try {
 				val calculatedResults = CalculatorEngine.calculate(calculator.id, numericInputs)
 				_results.value = calculatedResults
+				// Get calculation details if available
+				_calculationDetails.value = CalculatorEngine.getCalculationDetails(calculator.id, numericInputs)
 				_error.value = null
 			} catch (e: Exception) {
 				_error.value = "Ошибка при расчёте: ${e.message}"
+				_calculationDetails.value = null
 			}
 		}
 	}
@@ -135,6 +142,7 @@ class CalculatorViewModel(calculatorId: String) : ViewModel() {
 		}
 		_inputValues.value = clearedValues
 		_results.value = emptyMap()
+		_calculationDetails.value = null
 		_error.value = null
 	}
 }

@@ -191,13 +191,44 @@ fun CalculatorScreen(
 					}
 					
 					currentCalculator.resultFields.forEach { field ->
-						val resultValue = results[field.id]
-						if (resultValue != null) {
-							ResultCard(
-								label = field.label,
-								value = resultValue,
-								unit = field.unit
-							)
+						// Special handling for calculation_details field
+						if (field.id == "calculation_details") {
+							val calculationDetails by viewModel.calculationDetails.collectAsState()
+							calculationDetails?.let { details ->
+								Card(
+									modifier = Modifier.fillMaxWidth(),
+									colors = CardDefaults.cardColors(
+										containerColor = MaterialTheme.colorScheme.surfaceVariant
+									)
+								) {
+									Column(
+										modifier = Modifier
+											.fillMaxWidth()
+											.padding(16.dp),
+										verticalArrangement = Arrangement.spacedBy(8.dp)
+									) {
+										Text(
+											text = field.label,
+											style = MaterialTheme.typography.titleMedium,
+											fontWeight = FontWeight.Bold
+										)
+										Text(
+											text = details,
+											style = MaterialTheme.typography.bodySmall,
+											color = MaterialTheme.colorScheme.onSurfaceVariant
+										)
+									}
+								}
+							}
+						} else {
+							val resultValue = results[field.id]
+							if (resultValue != null) {
+								ResultCard(
+									label = field.label,
+									value = resultValue,
+									unit = field.unit
+								)
+							}
 						}
 					}
 					
@@ -308,6 +339,7 @@ private fun UsageExampleCard(example: com.construction.domain.model.UsageExample
 /**
  * Input field composable with label, text field, and unit.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun InputField(
 	field: InputFieldDefinition,

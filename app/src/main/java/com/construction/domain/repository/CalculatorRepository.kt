@@ -794,9 +794,14 @@ object CalculatorRepository {
 					id = "foundation_type",
 					label = "Тип фундамента",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Ленточный, 2 - Плитный, 3 - Столбчатый"
+					hint = "Выберите тип фундамента",
+					options = listOf(
+						Pair(1.0, "Ленточный"),
+						Pair(2.0, "Плитный"),
+						Pair(3.0, "Столбчатый")
+					)
 				),
 				InputFieldDefinition(
 					id = "length",
@@ -839,17 +844,31 @@ object CalculatorRepository {
 					id = "concrete_grade",
 					label = "Марка бетона",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 200.0,
-					hint = "200 - М200, 250 - М250, 300 - М300"
+					hint = "Выберите марку бетона",
+					options = listOf(
+						Pair(200.0, "М200"),
+						Pair(250.0, "М250"),
+						Pair(300.0, "М300")
+					)
 				),
 				InputFieldDefinition(
 					id = "rebar_diameter",
 					label = "Диаметр арматуры",
 					unit = "мм",
-					type = InputFieldType.LENGTH,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 12.0,
-					hint = "Диаметр арматурных стержней (8, 10, 12, 14, 16, 18, 20 мм)"
+					hint = "Выберите диаметр арматуры",
+					options = listOf(
+						Pair(8.0, "8 мм"),
+						Pair(10.0, "10 мм"),
+						Pair(12.0, "12 мм"),
+						Pair(14.0, "14 мм"),
+						Pair(16.0, "16 мм"),
+						Pair(18.0, "18 мм"),
+						Pair(20.0, "20 мм")
+					)
 				),
 				InputFieldDefinition(
 					id = "mesh_step",
@@ -911,6 +930,11 @@ object CalculatorRepository {
 					id = "formwork_area",
 					label = "Площадь опалубки",
 					unit = "м²"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -957,9 +981,17 @@ object CalculatorRepository {
 					id = "concrete_grade",
 					label = "Марка бетона",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 200.0,
-					hint = "Марка бетона: 100-М100, 150-М150, 200-М200, 250-М250, 300-М300, 400-М400"
+					hint = "Выберите марку бетона",
+					options = listOf(
+						Pair(100.0, "М100"),
+						Pair(150.0, "М150"),
+						Pair(200.0, "М200"),
+						Pair(250.0, "М250"),
+						Pair(300.0, "М300"),
+						Pair(400.0, "М400")
+					)
 				),
 				InputFieldDefinition(
 					id = "cement_ratio",
@@ -1093,9 +1125,15 @@ object CalculatorRepository {
 					id = "roof_type",
 					label = "Тип крыши",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 2.0,
-					hint = "1 - Односкатная, 2 - Двускатная, 3 - Вальмовая, 4 - Мансардная"
+					hint = "Выберите тип крыши",
+					options = listOf(
+						Pair(1.0, "Односкатная"),
+						Pair(2.0, "Двускатная"),
+						Pair(3.0, "Вальмовая"),
+						Pair(4.0, "Мансардная")
+					)
 				),
 				InputFieldDefinition(
 					id = "roof_angle",
@@ -1213,17 +1251,30 @@ object CalculatorRepository {
 					id = "wall_thickness_bricks",
 					label = "Толщина стены",
 					unit = null,
-					type = InputFieldType.NUMBER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "0.5 - В полкирпича (120 мм), 1 - В кирпич (250 мм), 1.5 - В полтора кирпича (380 мм), 2 - В два кирпича (510 мм)"
+					hint = "Выберите толщину стены",
+					options = listOf(
+						Pair(0.5, "0.5 кирпича (120 мм)"),
+						Pair(1.0, "1 кирпич (250 мм)"),
+						Pair(1.5, "1.5 кирпича (380 мм)"),
+						Pair(2.0, "2 кирпича (510 мм)")
+					)
 				),
 				InputFieldDefinition(
 					id = "material_type",
 					label = "Тип материала",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Кирпич одинарный, 2 - Кирпич полуторный, 3 - Кирпич двойной, 4 - Газоблок, 5 - Пеноблок"
+					hint = "Выберите тип материала",
+					options = listOf(
+						Pair(1.0, "Кирпич одинарный"),
+						Pair(2.0, "Кирпич полуторный"),
+						Pair(3.0, "Кирпич двойной"),
+						Pair(4.0, "Газоблок"),
+						Pair(5.0, "Пеноблок")
+					)
 				),
 				InputFieldDefinition(
 					id = "material_length",
@@ -1281,6 +1332,11 @@ object CalculatorRepository {
 					id = "mortar_volume",
 					label = "Объём раствора/клея",
 					unit = "м³"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1327,11 +1383,6 @@ object CalculatorRepository {
 					resultSummary = "Количество: 81 шт, Клей: 0.026 м³"
 				)
 			)
-					description = "Расчёт пеноблоков для строительства гаража.",
-					inputSummary = "Длина 20 м, высота 2,5 м, толщина 0,3 м, блок 20×30×20 см, запас 5%",
-					resultSummary = "Потребуется 1313 блоков, объём стены 15 м³"
-				)
-			)
 		)
 	}
 	
@@ -1369,9 +1420,14 @@ object CalculatorRepository {
 					id = "stairs_type",
 					label = "Тип лестницы",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Прямая, 2 - Поворотная 90°, 3 - Поворотная 180°"
+					hint = "Выберите тип лестницы",
+					options = listOf(
+						Pair(1.0, "Прямая"),
+						Pair(2.0, "Поворотная 90°"),
+						Pair(3.0, "Поворотная 180°")
+					)
 				)
 			),
 			resultFields = listOf(
@@ -1394,6 +1450,11 @@ object CalculatorRepository {
 					id = "comfort_formula",
 					label = "Формула удобной лестницы",
 					unit = "мм"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1454,17 +1515,29 @@ object CalculatorRepository {
 					id = "work_type",
 					label = "Тип работ",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Фундамент, 2 - Дорожка, 3 - Отмостка, 4 - Подсыпка, 5 - Свой вариант"
+					hint = "Выберите тип работ",
+					options = listOf(
+						Pair(1.0, "Фундамент - Щебень для подушки фундамента"),
+						Pair(2.0, "Дорожка - Щебень для садовой дорожки"),
+						Pair(3.0, "Отмостка - Щебень для отмостки вокруг дома"),
+						Pair(4.0, "Подсыпка - Щебень для выравнивания и подсыпки"),
+						Pair(5.0, "Свой вариант - Произвольный расчёт")
+					)
 				),
 				InputFieldDefinition(
 					id = "input_method",
 					label = "Способ ввода данных",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Длина × Ширина, 2 - Площадь, 3 - Объём"
+					hint = "Выберите способ ввода данных",
+					options = listOf(
+						Pair(1.0, "Длина × Ширина"),
+						Pair(2.0, "Площадь"),
+						Pair(3.0, "Объём")
+					)
 				),
 				InputFieldDefinition(
 					id = "length",
@@ -1506,9 +1579,16 @@ object CalculatorRepository {
 					id = "fraction_type",
 					label = "Фракция щебня",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 3.0,
-					hint = "1 - 5-10 мм (1500 кг/м³), 2 - 10-20 мм (1450 кг/м³), 3 - 20-40 мм (1400 кг/м³), 4 - 40-70 мм (1350 кг/м³), 5 - Своя"
+					hint = "Выберите фракцию щебня",
+					options = listOf(
+						Pair(1.0, "5-10 мм - Мелкий щебень для декора"),
+						Pair(2.0, "10-20 мм - Стандартный для фундамента"),
+						Pair(3.0, "20-40 мм - Крупный для дорожек"),
+						Pair(4.0, "40-70 мм - Очень крупный для подсыпки"),
+						Pair(5.0, "Своя фракция - Укажите плотность вручную")
+					)
 				),
 				InputFieldDefinition(
 					id = "gravel_density",
@@ -1547,6 +1627,11 @@ object CalculatorRepository {
 					id = "gravel_mass_with_waste",
 					label = "Вес с запасом",
 					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1671,6 +1756,11 @@ object CalculatorRepository {
 					id = "required_airflow",
 					label = "Требуемая производительность",
 					unit = "м³/ч"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1811,6 +1901,11 @@ object CalculatorRepository {
 					id = "monthly_cost",
 					label = "Стоимость в месяц",
 					unit = "₽"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1941,6 +2036,11 @@ object CalculatorRepository {
 					id = "pressure_loss",
 					label = "Потери давления",
 					unit = "бар"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -2003,7 +2103,7 @@ object CalculatorRepository {
 					id = "structure_type",
 					label = "Тип конструкции",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
 					hint = "Выберите тип конструкции",
 					options = listOf(
@@ -2038,15 +2138,22 @@ object CalculatorRepository {
 					id = "mesh_step",
 					label = "Шаг сетки",
 					unit = "см",
-					type = InputFieldType.LENGTH,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 20.0,
-					hint = "Расстояние между арматурными стержнями (обычно 15-25 см)"
+					hint = "Расстояние между арматурными стержнями (обычно 15-25 см)",
+					options = listOf(
+						Pair(10.0, "10 см"),
+						Pair(15.0, "15 см"),
+						Pair(20.0, "20 см"),
+						Pair(25.0, "25 см"),
+						Pair(30.0, "30 см")
+					)
 				),
 				InputFieldDefinition(
 					id = "rebar_diameter",
 					label = "Диаметр арматуры",
 					unit = "мм",
-					type = InputFieldType.LENGTH,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 12.0,
 					hint = "Выберите диаметр арматурного стержня",
 					options = listOf(
@@ -2097,6 +2204,11 @@ object CalculatorRepository {
 					id = "mass_per_meter",
 					label = "Масса на метр",
 					unit = "кг/м"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -2136,9 +2248,13 @@ object CalculatorRepository {
 					id = "calculation_type",
 					label = "Тип расчёта",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - По мощности, 2 - По току"
+					hint = "Выберите тип расчёта",
+					options = listOf(
+						Pair(1.0, "По мощности"),
+						Pair(2.0, "По току")
+					)
 				),
 				InputFieldDefinition(
 					id = "power",
@@ -2173,17 +2289,25 @@ object CalculatorRepository {
 					id = "conductor_material",
 					label = "Материал проводника",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Медь, 2 - Алюминий"
+					hint = "Выберите материал проводника",
+					options = listOf(
+						Pair(1.0, "Медь"),
+						Pair(2.0, "Алюминий")
+					)
 				),
 				InputFieldDefinition(
 					id = "network_type",
 					label = "Тип сети",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Однофазная, 2 - Трёхфазная"
+					hint = "Выберите тип сети",
+					options = listOf(
+						Pair(1.0, "Однофазная"),
+						Pair(2.0, "Трёхфазная")
+					)
 				),
 				InputFieldDefinition(
 					id = "power_factor",
@@ -2213,9 +2337,14 @@ object CalculatorRepository {
 					id = "installation_type",
 					label = "Способ прокладки",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Открытая прокладка, 2 - Закрытая прокладка, 3 - Подземная прокладка"
+					hint = "Выберите способ прокладки",
+					options = listOf(
+						Pair(1.0, "Открытая прокладка"),
+						Pair(2.0, "Закрытая прокладка"),
+						Pair(3.0, "Подземная прокладка")
+					)
 				)
 			),
 			resultFields = listOf(
@@ -2243,6 +2372,11 @@ object CalculatorRepository {
 					id = "voltage_drop_percent_calc",
 					label = "Потери напряжения",
 					unit = "%"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -2303,17 +2437,26 @@ object CalculatorRepository {
 					id = "calculation_type",
 					label = "Тип расчёта",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 3.0,
-					hint = "1 - Сечение кабеля, 2 - Автомат, 3 - Оба расчёта"
+					hint = "Выберите тип расчёта",
+					options = listOf(
+						Pair(1.0, "Сечение кабеля"),
+						Pair(2.0, "Автомат"),
+						Pair(3.0, "Оба расчёта")
+					)
 				),
 				InputFieldDefinition(
 					id = "input_method",
 					label = "Способ ввода данных",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - По мощности (кВт), 2 - По току (А)"
+					hint = "Выберите способ ввода данных",
+					options = listOf(
+						Pair(1.0, "По мощности (кВт)"),
+						Pair(2.0, "По току (А)")
+					)
 				),
 				InputFieldDefinition(
 					id = "power",
@@ -2334,17 +2477,27 @@ object CalculatorRepository {
 					id = "voltage",
 					label = "Напряжение",
 					unit = "В",
-					type = InputFieldType.NUMBER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 220.0,
-					hint = "12 В, 24 В, 220 В, 380 В"
+					hint = "Выберите напряжение",
+					options = listOf(
+						Pair(12.0, "12 В (низковольтное)"),
+						Pair(24.0, "24 В (низковольтное)"),
+						Pair(220.0, "220 В (однофазная сеть)"),
+						Pair(380.0, "380 В (трёхфазная сеть)")
+					)
 				),
 				InputFieldDefinition(
 					id = "network_type",
 					label = "Тип сети",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Однофазная (220 В), 2 - Трёхфазная (380 В)"
+					hint = "Выберите тип сети",
+					options = listOf(
+						Pair(1.0, "Однофазная (220 В)"),
+						Pair(2.0, "Трёхфазная (380 В)")
+					)
 				),
 				InputFieldDefinition(
 					id = "cable_length",
@@ -2358,17 +2511,26 @@ object CalculatorRepository {
 					id = "conductor_material",
 					label = "Материал проводника",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Медь, 2 - Алюминий"
+					hint = "Выберите материал проводника",
+					options = listOf(
+						Pair(1.0, "Медь"),
+						Pair(2.0, "Алюминий")
+					)
 				),
 				InputFieldDefinition(
 					id = "installation_type",
 					label = "Способ прокладки",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Открытая прокладка, 2 - Скрытая прокладка, 3 - В кабель-канале"
+					hint = "Выберите способ прокладки",
+					options = listOf(
+						Pair(1.0, "Открытая прокладка"),
+						Pair(2.0, "Скрытая прокладка"),
+						Pair(3.0, "В кабель-канале")
+					)
 				),
 				InputFieldDefinition(
 					id = "power_factor",
@@ -2390,9 +2552,14 @@ object CalculatorRepository {
 					id = "breaker_type",
 					label = "Тип автомата",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Тип C (бытовые), 2 - Тип B (слабоиндуктивные), 3 - Тип D (высокие пусковые токи)"
+					hint = "Выберите тип автомата",
+					options = listOf(
+						Pair(1.0, "Тип C (бытовые)"),
+						Pair(2.0, "Тип B (слабоиндуктивные)"),
+						Pair(3.0, "Тип D (высокие пусковые токи)")
+					)
 				)
 			),
 			resultFields = listOf(
@@ -2430,6 +2597,11 @@ object CalculatorRepository {
 					id = "voltage_drop_percent_calc",
 					label = "Потери напряжения",
 					unit = "%"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
