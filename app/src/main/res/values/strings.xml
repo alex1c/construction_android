@@ -20,7 +20,20 @@
     <string name="about_description">Строительные калькуляторы Calc1 - набор полезных инструментов для расчёта материалов и параметров строительства.</string>
     
     <!-- RuStore URL placeholder -->
-    <string name="rustore_url">https://apps.rustore.ru/app/com.construction.calculators</string>
+    <string name="rustore_url">https://apps.rustore.ru/app/com.construction</string>
+    
+    <!-- Version info -->
+    <string name="app_version">1.0</string>
+    <string name="app_version_code">1</string>
+    
+    <!-- RuStore publication info -->
+    <string name="app_category">Инструменты</string>
+    <string name="app_developer">Calc1</string>
+    
+    <!-- Contact information -->
+    <string name="contact_email">calc1.ru@ya.ru</string>
+    <string name="privacy_policy_url">https://calc1.ru/privacy-policy</string>
+    <string name="support_email">calc1.ru@ya.ru</string>
 </resources>
 
 

@@ -3,6 +3,13 @@ plugins {
 	id 'org.jetbrains.kotlin.android'
 }
 
+// Load keystore properties if file exists
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
 	namespace 'com.construction'
 	compileSdk 34
@@ -20,10 +27,31 @@ android {
 		}
 	}
 	
+	// Signing configurations
+	signingConfigs {
+		if (keystorePropertiesFile.exists()) {
+			release {
+				storeFile file(keystoreProperties['storeFile'])
+				storePassword keystoreProperties['storePassword']
+				keyAlias keystoreProperties['keyAlias']
+				keyPassword keystoreProperties['keyPassword']
+			}
+		}
+	}
+	
 	buildTypes {
 		release {
+			// Enable minify for production release (optional, can be disabled for initial release)
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+			// Use signing config if keystore.properties exists
+			if (keystorePropertiesFile.exists()) {
+				signingConfig signingConfigs.release
+			}
+		}
+		debug {
+			applicationIdSuffix ".debug"
+			versionNameSuffix "-debug"
 		}
 	}
 	

@@ -15,6 +15,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.content.Intent
+import android.net.Uri
 import com.construction.R
 import com.construction.util.ShareHelper
 
@@ -89,12 +91,161 @@ fun AboutScreen(
 				Text(stringResource(R.string.share_app))
 			}
 			
-			// Version info (placeholder)
-			Text(
-				text = "Версия 1.0.0",
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
+			// Version info
+			Card(
+				modifier = Modifier.fillMaxWidth(),
+				colors = CardDefaults.cardColors(
+					containerColor = MaterialTheme.colorScheme.surfaceVariant
+				)
+			) {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp),
+					verticalArrangement = Arrangement.spacedBy(8.dp)
+				) {
+					Text(
+						text = "Версия приложения",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.Bold
+					)
+					Text(
+						text = "1.0 (Build 1)",
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+					Text(
+						text = "Минимальная версия Android: 7.0 (API 24)",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
+			
+			// Contact information
+			Card(
+				modifier = Modifier.fillMaxWidth(),
+				colors = CardDefaults.cardColors(
+					containerColor = MaterialTheme.colorScheme.surfaceVariant
+				)
+			) {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp),
+					verticalArrangement = Arrangement.spacedBy(8.dp)
+				) {
+					Text(
+						text = "Контактная информация",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.Bold
+					)
+					Text(
+						text = "Email для поддержки:",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+					Text(
+						text = stringResource(R.string.contact_email),
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.primary
+					)
+					Spacer(modifier = Modifier.height(8.dp))
+					Text(
+						text = "Разработчик: ${stringResource(R.string.app_developer)}",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
+			
+			// Privacy policy
+			Card(
+				modifier = Modifier.fillMaxWidth(),
+				colors = CardDefaults.cardColors(
+					containerColor = MaterialTheme.colorScheme.surfaceVariant
+				)
+			) {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp),
+					verticalArrangement = Arrangement.spacedBy(8.dp)
+				) {
+					Text(
+						text = "Политика конфиденциальности",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.Bold
+					)
+					Text(
+						text = "Приложение собирает минимальные данные, которые хранятся только локально на вашем устройстве. История расчётов не передаётся на внешние серверы.",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+					Button(
+						onClick = {
+							val intent = Intent(Intent.ACTION_VIEW, Uri.parse(context.getString(R.string.privacy_policy_url)))
+							context.startActivity(intent)
+						},
+						modifier = Modifier.fillMaxWidth(),
+						colors = ButtonDefaults.buttonColors(
+							containerColor = MaterialTheme.colorScheme.primaryContainer,
+							contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+						)
+					) {
+						Text("Открыть политику конфиденциальности")
+					}
+				}
+			}
+			
+			// Support contact
+			Card(
+				modifier = Modifier.fillMaxWidth(),
+				colors = CardDefaults.cardColors(
+					containerColor = MaterialTheme.colorScheme.surfaceVariant
+				)
+			) {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp),
+					verticalArrangement = Arrangement.spacedBy(8.dp)
+				) {
+					Text(
+						text = "Поддержка",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.Bold
+					)
+					Text(
+						text = "По вопросам работы приложения обращайтесь:",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+					Button(
+						onClick = {
+							val email = context.getString(R.string.support_email)
+							val intent = Intent(Intent.ACTION_SENDTO).apply {
+								data = Uri.parse("mailto:$email")
+								putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+								putExtra(Intent.EXTRA_SUBJECT, "Вопрос по приложению Строительные калькуляторы")
+							}
+							context.startActivity(Intent.createChooser(intent, "Отправить email"))
+						},
+						modifier = Modifier.fillMaxWidth(),
+						colors = ButtonDefaults.buttonColors(
+							containerColor = MaterialTheme.colorScheme.primaryContainer,
+							contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+						)
+					) {
+						Text("Написать в поддержку")
+					}
+					Text(
+						text = stringResource(R.string.support_email),
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.primary
+					)
+				}
+			}
 		}
 	}
 }

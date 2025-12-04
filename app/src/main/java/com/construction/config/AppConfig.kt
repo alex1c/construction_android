@@ -33,10 +33,10 @@ object AppConfig {
 	 * descriptions. When false, only basic results are shown. When true, users
 	 * see step-by-step calculation explanations with formulas.
 	 * 
-	 * Current State:
-	 * - Premium features are ENABLED
-	 * - All detailed descriptions are calculated and displayed
-	 * - Ready for integration with RuStore Billing in future updates
+	 * Current State (Version 1.0):
+	 * - Always false (premium features hidden)
+	 * - All detailed descriptions are calculated but not displayed
+	 * - Ready for activation when premium billing is integrated
 	 * 
 	 * Future Integration:
 	 * This flag will be controlled by RuStore Billing:
@@ -52,6 +52,9 @@ object AppConfig {
 	 * 
 	 * TODO: Enable after Premium feature launch
 	 * This flag will be controlled by RuStore Billing in future updates.
+	 * 
+	 * NOTE: Currently set to true for testing purposes before RuStore Billing integration.
+	 * Will be controlled by billingManager.isPremiumUser() after integration.
 	 */
 	var premiumEnabled: Boolean = true
 }
