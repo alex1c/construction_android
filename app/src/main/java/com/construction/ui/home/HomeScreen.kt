@@ -34,13 +34,20 @@ fun HomeScreen(
 	val categories = remember { CalculatorRepository.getCategories() }
 	
 	// Filter calculators based on search text
+	// Recalculate whenever searchText changes
 	val filteredCalculators = remember(searchText) {
-		if (searchText.isBlank()) {
+		val query = searchText.trim()
+		if (query.isBlank()) {
 			emptyList()
 		} else {
+			val queryLower = query.lowercase()
 			allCalculators.filter { calculator ->
-				calculator.name.contains(searchText, ignoreCase = true) ||
-				calculator.shortDescription.contains(searchText, ignoreCase = true)
+				// Search in name (case-insensitive)
+				calculator.name.lowercase().contains(queryLower) ||
+				// Search in description (case-insensitive)
+				calculator.shortDescription.lowercase().contains(queryLower) ||
+				// Search in ID (for English names, case-insensitive)
+				calculator.id.lowercase().contains(queryLower)
 			}
 		}
 	}
