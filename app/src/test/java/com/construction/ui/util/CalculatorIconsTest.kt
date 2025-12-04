@@ -38,9 +38,24 @@ class CalculatorIconsTest {
 		
 		for (category in categories) {
 			val color = CalculatorIcons.getCategoryColor(category.id)
-			assertTrue("Category ${category.name} should have a valid color", color > 0)
-			// Check that color is in valid ARGB range
-			assertTrue("Category ${category.name} color should be valid ARGB", color <= 0xFFFFFFFF)
+			// ARGB colors are 32-bit unsigned values (0x00000000 to 0xFFFFFFFF)
+			// When stored as Long, we need to check the lower 32 bits
+			val colorAsUnsigned = color and 0xFFFFFFFFL
+			assertTrue(
+				"Category ${category.name} should have a valid color (got: 0x${color.toString(16).uppercase()})",
+				colorAsUnsigned > 0L
+			)
+			// Check that color is in valid ARGB range (0x00000000 to 0xFFFFFFFF)
+			assertTrue(
+				"Category ${category.name} color should be valid ARGB (got: 0x${color.toString(16).uppercase()})",
+				colorAsUnsigned <= 0xFFFFFFFFL
+			)
+			// Verify alpha channel is set (most significant byte should be 0xFF for opaque colors)
+			val alpha = (colorAsUnsigned shr 24) and 0xFF
+			assertTrue(
+				"Category ${category.name} color should have alpha channel set (got: 0x${alpha.toString(16).uppercase()})",
+				alpha > 0
+			)
 		}
 	}
 	
