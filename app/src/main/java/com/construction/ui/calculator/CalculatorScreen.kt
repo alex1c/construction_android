@@ -6,10 +6,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -320,27 +324,66 @@ private fun InputField(
 			fontWeight = FontWeight.Medium
 		)
 		
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
-			verticalAlignment = Alignment.CenterVertically
-		) {
-			OutlinedTextField(
-				value = value,
-				onValueChange = onValueChange,
-				modifier = Modifier.weight(1f),
-				placeholder = { Text(field.hint ?: "") },
-				singleLine = true,
-				isError = value.isNotBlank() && value.toDoubleOrNull() == null
-			)
+		// Use dropdown if options are provided
+		if (field.options != null && field.options.isNotEmpty()) {
+			var expanded by remember { mutableStateOf(false) }
+			val currentValue = value.toDoubleOrNull() ?: field.defaultValue ?: field.options.first().first
+			val selectedOption = field.options.find { it.first == currentValue } ?: field.options.first()
 			
-			if (field.unit != null) {
-				Text(
-					text = field.unit,
-					style = MaterialTheme.typography.bodyMedium,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
-					modifier = Modifier.padding(end = 8.dp)
+			ExposedDropdownMenuBox(
+				expanded = expanded,
+				onExpandedChange = { expanded = !expanded },
+				modifier = Modifier.fillMaxWidth()
+			) {
+				OutlinedTextField(
+					value = selectedOption.second,
+					onValueChange = { },
+					readOnly = true,
+					modifier = Modifier
+						.fillMaxWidth()
+						.menuAnchor(),
+					trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
+					placeholder = { Text(field.hint ?: "") }
 				)
+				ExposedDropdownMenu(
+					expanded = expanded,
+					onDismissRequest = { expanded = false }
+				) {
+					field.options.forEach { option ->
+						DropdownMenuItem(
+							text = { Text(option.second) },
+							onClick = {
+								onValueChange(option.first.toString())
+								expanded = false
+							}
+						)
+					}
+				}
+			}
+		} else {
+			// Regular text field
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.spacedBy(8.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				OutlinedTextField(
+					value = value,
+					onValueChange = onValueChange,
+					modifier = Modifier.weight(1f),
+					placeholder = { Text(field.hint ?: "") },
+					singleLine = true,
+					isError = value.isNotBlank() && value.toDoubleOrNull() == null
+				)
+				
+				if (field.unit != null) {
+					Text(
+						text = field.unit,
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant,
+						modifier = Modifier.padding(end = 8.dp)
+					)
+				}
 			}
 		}
 		

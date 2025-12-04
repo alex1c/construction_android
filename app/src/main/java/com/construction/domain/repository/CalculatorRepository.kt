@@ -791,25 +791,57 @@ object CalculatorRepository {
 			shortDescription = "Расчёт материалов для фундамента: бетон, арматура, опалубка",
 			inputFields = listOf(
 				InputFieldDefinition(
-					id = "foundation_length",
-					label = "Длина фундамента",
-					unit = "м",
-					type = InputFieldType.LENGTH,
-					hint = "Общая длина фундамента"
+					id = "foundation_type",
+					label = "Тип фундамента",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Ленточный, 2 - Плитный, 3 - Столбчатый"
 				),
 				InputFieldDefinition(
-					id = "foundation_width",
-					label = "Ширина фундамента",
+					id = "length",
+					label = "Длина",
 					unit = "м",
 					type = InputFieldType.LENGTH,
-					hint = "Ширина фундамента"
+					hint = "Длина фундамента (для столбчатого - длина одного столба)"
 				),
 				InputFieldDefinition(
-					id = "foundation_height",
-					label = "Высота фундамента",
+					id = "width",
+					label = "Ширина",
 					unit = "м",
 					type = InputFieldType.LENGTH,
-					hint = "Высота фундамента"
+					hint = "Ширина фундамента (для столбчатого - ширина одного столба)"
+				),
+				InputFieldDefinition(
+					id = "height",
+					label = "Высота",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					hint = "Высота фундамента (для плитного - толщина плиты)"
+				),
+				InputFieldDefinition(
+					id = "wall_thickness",
+					label = "Толщина стены",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					defaultValue = 0.3,
+					hint = "Толщина стены (только для ленточного фундамента)"
+				),
+				InputFieldDefinition(
+					id = "pillars_count",
+					label = "Количество столбов",
+					unit = "шт",
+					type = InputFieldType.INTEGER,
+					defaultValue = 9.0,
+					hint = "Количество столбов (только для столбчатого фундамента)"
+				),
+				InputFieldDefinition(
+					id = "concrete_grade",
+					label = "Марка бетона",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 200.0,
+					hint = "200 - М200, 250 - М250, 300 - М300"
 				),
 				InputFieldDefinition(
 					id = "rebar_diameter",
@@ -817,7 +849,31 @@ object CalculatorRepository {
 					unit = "мм",
 					type = InputFieldType.LENGTH,
 					defaultValue = 12.0,
-					hint = "Диаметр арматурных стержней"
+					hint = "Диаметр арматурных стержней (8, 10, 12, 14, 16, 18, 20 мм)"
+				),
+				InputFieldDefinition(
+					id = "mesh_step",
+					label = "Шаг арматуры",
+					unit = "см",
+					type = InputFieldType.LENGTH,
+					defaultValue = 20.0,
+					hint = "Расстояние между арматурными стержнями"
+				),
+				InputFieldDefinition(
+					id = "layers_count",
+					label = "Количество слоёв арматуры",
+					unit = "шт",
+					type = InputFieldType.INTEGER,
+					defaultValue = 2.0,
+					hint = "Количество слоёв арматуры (обычно 2)"
+				),
+				InputFieldDefinition(
+					id = "waste_percent",
+					label = "Запас",
+					unit = "%",
+					type = InputFieldType.PERCENT,
+					defaultValue = 10.0,
+					hint = "Процент запаса материалов"
 				)
 			),
 			resultFields = listOf(
@@ -827,8 +883,28 @@ object CalculatorRepository {
 					unit = "м³"
 				),
 				ResultFieldDefinition(
+					id = "cement_mass",
+					label = "Цемент",
+					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "cement_bags",
+					label = "Цемент",
+					unit = "мешков"
+				),
+				ResultFieldDefinition(
+					id = "sand_mass",
+					label = "Песок",
+					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "gravel_mass",
+					label = "Щебень",
+					unit = "кг"
+				),
+				ResultFieldDefinition(
 					id = "rebar_mass",
-					label = "Масса арматуры",
+					label = "Арматура",
 					unit = "кг"
 				),
 				ResultFieldDefinition(
@@ -839,25 +915,25 @@ object CalculatorRepository {
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "foundation_garage",
-					title = "Ленточный фундамент под гараж",
-					description = "Расчёт материалов для ленточного фундамента под гараж 6×4 м.",
-					inputSummary = "Длина 20 м, ширина 0,4 м, высота 0,5 м, арматура 12 мм",
-					resultSummary = "Бетон 4 м³, арматура 400 кг, опалубка 20 м²"
+					id = "foundation_strip_house",
+					title = "Ленточный фундамент для дома 6×8 м",
+					description = "Ленточный фундамент для одноэтажного дома, глубина 1.5 м",
+					inputSummary = "Тип: 1, Длина: 8 м, Ширина: 6 м, Высота: 1.5 м, Толщина стены: 0.4 м, Марка: М200, Арматура: 12 мм, шаг 20 см, 2 слоя, Запас: 10%",
+					resultSummary = "Бетон: 16.37 м³, Цемент: 92 мешка, Арматура: 1,640 кг"
 				),
 				UsageExample(
-					id = "foundation_house",
-					title = "Фундамент под частный дом",
-					description = "Расчёт материалов для ленточного фундамента под дом 10×8 м.",
-					inputSummary = "Длина 36 м, ширина 0,5 м, высота 0,6 м, арматура 12 мм",
-					resultSummary = "Бетон 10,8 м³, арматура 1080 кг, опалубка 43,2 м²"
+					id = "foundation_slab_house",
+					title = "Плитный фундамент для дома 10×10 м",
+					description = "Монолитная плита для двухэтажного дома, толщина 30 см",
+					inputSummary = "Тип: 2, Длина: 10 м, Ширина: 10 м, Высота: 0.3 м, Марка: М250, Арматура: 14 мм, шаг 20 см, 2 слоя, Запас: 10%",
+					resultSummary = "Бетон: 33 м³, Цемент: 218 мешков, Арматура: 3,300 кг"
 				),
 				UsageExample(
-					id = "foundation_slab",
-					title = "Плитный фундамент",
-					description = "Расчёт материалов для плитного фундамента под дом.",
-					inputSummary = "Длина 10 м, ширина 8 м, высота 0,3 м, арматура 14 мм",
-					resultSummary = "Бетон 24 м³, арматура 2400 кг, опалубка 52 м²"
+					id = "foundation_column_bath",
+					title = "Столбчатый фундамент для бани 4×4 м",
+					description = "Столбчатый фундамент для бани, 9 столбов",
+					inputSummary = "Тип: 3, Длина: 0.4 м, Ширина: 0.4 м, Высота: 1.2 м, Количество: 9, Марка: М200, Арматура: 10 мм, шаг 15 см, 1 слой, Запас: 10%",
+					resultSummary = "Бетон: 1.9 м³, Цемент: 11 мешков, Арматура: 190 кг"
 				)
 			)
 		)
@@ -883,7 +959,7 @@ object CalculatorRepository {
 					unit = null,
 					type = InputFieldType.INTEGER,
 					defaultValue = 200.0,
-					hint = "Марка бетона (М100, М150, М200, М250, М300, М400)"
+					hint = "Марка бетона: 100-М100, 150-М150, 200-М200, 250-М250, 300-М300, 400-М400"
 				),
 				InputFieldDefinition(
 					id = "cement_ratio",
@@ -891,7 +967,7 @@ object CalculatorRepository {
 					unit = null,
 					type = InputFieldType.NUMBER,
 					defaultValue = 1.0,
-					hint = "Пропорция цемента (обычно 1)"
+					hint = "Пропорция цемента (обычно 1). М100:1, М150:1, М200:1, М250:1, М300:1, М400:1"
 				),
 				InputFieldDefinition(
 					id = "sand_ratio",
@@ -899,7 +975,7 @@ object CalculatorRepository {
 					unit = null,
 					type = InputFieldType.NUMBER,
 					defaultValue = 2.5,
-					hint = "Пропорция песка (для М200 обычно 2.5)"
+					hint = "Пропорция песка. М100:4, М150:3, М200:2.5, М250:2, М300:1.5, М400:1"
 				),
 				InputFieldDefinition(
 					id = "gravel_ratio",
@@ -907,7 +983,7 @@ object CalculatorRepository {
 					unit = null,
 					type = InputFieldType.NUMBER,
 					defaultValue = 4.5,
-					hint = "Пропорция щебня (для М200 обычно 4.5)"
+					hint = "Пропорция щебня. М100:6, М150:5, М200:4.5, М250:4, М300:3, М400:2"
 				),
 				InputFieldDefinition(
 					id = "water_cement_ratio",
@@ -923,6 +999,11 @@ object CalculatorRepository {
 					id = "cement_mass",
 					label = "Цемент",
 					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "cement_bags",
+					label = "Цемент",
+					unit = "мешков"
 				),
 				ResultFieldDefinition(
 					id = "sand_mass",
@@ -944,23 +1025,44 @@ object CalculatorRepository {
 				UsageExample(
 					id = "concrete_foundation",
 					title = "Фундамент 10 м³ М200",
-					description = "Расчёт компонентов бетонной смеси для фундамента дома.",
-					inputSummary = "Объём 10 м³, марка М200, пропорции 1:2.5:4.5, В/Ц 0.5",
-					resultSummary = "Цемент 1750 кг, песок 5000 кг, щебень 7875 кг, вода 875 л"
+					description = "Фундамент для дома, бетон марки М200, пропорции 1:2.5:4.5",
+					inputSummary = "Объём: 10 м³, Марка: М200, Пропорции: 1:2.5:4.5 (цемент:песок:щебень), В/Ц: 0.5",
+					resultSummary = "Цемент: 1750 кг (35 мешков), Песок: 5000 кг, Щебень: 7875 кг, Вода: 875 л"
 				),
 				UsageExample(
 					id = "concrete_floor",
 					title = "Стяжка пола 5 м³ М150",
-					description = "Расчёт компонентов бетона для стяжки пола.",
-					inputSummary = "Объём 5 м³, марка М150, пропорции 1:3:5, В/Ц 0.6",
-					resultSummary = "Цемент 778 кг, песок 2667 кг, щебень 3889 кг, вода 467 л"
+					description = "Стяжка пола, бетон марки М150, пропорции 1:3:5",
+					inputSummary = "Объём: 5 м³, Марка: М150, Пропорции: 1:3:5 (цемент:песок:щебень), В/Ц: 0.6",
+					resultSummary = "Цемент: 778 кг (16 мешков), Песок: 2667 кг, Щебень: 3889 кг, Вода: 467 л"
 				),
 				UsageExample(
 					id = "concrete_slab",
 					title = "Перекрытие 15 м³ М300",
-					description = "Расчёт компонентов бетона для перекрытия между этажами.",
-					inputSummary = "Объём 15 м³, марка М300, пропорции 1:1.5:3, В/Ц 0.45",
-					resultSummary = "Цемент 3818 кг, песок 6545 кг, щебень 11455 кг, вода 1718 л"
+					description = "Перекрытие между этажами, бетон марки М300, пропорции 1:1.5:3",
+					inputSummary = "Объём: 15 м³, Марка: М300, Пропорции: 1:1.5:3 (цемент:песок:щебень), В/Ц: 0.45",
+					resultSummary = "Цемент: 3818 кг (77 мешков), Песок: 6545 кг, Щебень: 11455 кг, Вода: 1718 л"
+				),
+				UsageExample(
+					id = "concrete_walkway",
+					title = "Отмостка 2 м³ М100",
+					description = "Отмостка вокруг дома, бетон марки М100, пропорции 1:4:6",
+					inputSummary = "Объём: 2 м³, Марка: М100, Пропорции: 1:4:6 (цемент:песок:щебень), В/Ц: 0.7",
+					resultSummary = "Цемент: 255 кг (6 мешков), Песок: 1164 кг, Щебень: 1527 кг, Вода: 179 л"
+				),
+				UsageExample(
+					id = "concrete_column",
+					title = "Колонна 3 м³ М250",
+					description = "Несущая колонна, бетон марки М250, пропорции 1:2:4",
+					inputSummary = "Объём: 3 м³, Марка: М250, Пропорции: 1:2:4 (цемент:песок:щебень), В/Ц: 0.5",
+					resultSummary = "Цемент: 600 кг (12 мешков), Песок: 1371 кг, Щебень: 2400 кг, Вода: 300 л"
+				),
+				UsageExample(
+					id = "concrete_slab_high",
+					title = "Плита перекрытия 20 м³ М400",
+					description = "Особо ответственная плита, бетон марки М400, пропорции 1:1:2",
+					inputSummary = "Объём: 20 м³, Марка: М400, Пропорции: 1:1:2 (цемент:песок:щебень), В/Ц: 0.4",
+					resultSummary = "Цемент: 7000 кг (140 мешков), Песок: 8000 кг, Щебень: 14000 кг, Вода: 2800 л"
 				)
 			)
 		)
@@ -974,42 +1076,66 @@ object CalculatorRepository {
 			shortDescription = "Расчёт площади крыши, количества кровельных материалов и веса",
 			inputFields = listOf(
 				InputFieldDefinition(
-					id = "roof_length",
-					label = "Длина крыши",
+					id = "house_length",
+					label = "Длина дома",
 					unit = "м",
 					type = InputFieldType.LENGTH,
-					hint = "Длина крыши"
+					hint = "Длина дома"
 				),
 				InputFieldDefinition(
-					id = "roof_width",
-					label = "Ширина крыши",
+					id = "house_width",
+					label = "Ширина дома",
 					unit = "м",
 					type = InputFieldType.LENGTH,
-					hint = "Ширина крыши"
+					hint = "Ширина дома"
+				),
+				InputFieldDefinition(
+					id = "roof_type",
+					label = "Тип крыши",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 2.0,
+					hint = "1 - Односкатная, 2 - Двускатная, 3 - Вальмовая, 4 - Мансардная"
 				),
 				InputFieldDefinition(
 					id = "roof_angle",
-					label = "Угол наклона",
+					label = "Угол наклона крыши",
 					unit = "°",
 					type = InputFieldType.NUMBER,
 					defaultValue = 30.0,
 					hint = "Угол наклона крыши в градусах"
 				),
 				InputFieldDefinition(
-					id = "material_weight",
-					label = "Вес материала",
-					unit = "кг/м²",
-					type = InputFieldType.NUMBER,
-					defaultValue = 5.0,
-					hint = "Вес кровельного материала на квадратный метр"
+					id = "overhang",
+					label = "Свес",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					defaultValue = 0.5,
+					hint = "Длина свеса по периметру"
+				),
+				InputFieldDefinition(
+					id = "sheet_length",
+					label = "Длина листа",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					defaultValue = 1.18,
+					hint = "Длина листа кровельного материала"
+				),
+				InputFieldDefinition(
+					id = "sheet_width",
+					label = "Ширина листа",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					defaultValue = 0.35,
+					hint = "Ширина листа кровельного материала"
 				),
 				InputFieldDefinition(
 					id = "waste_percent",
-					label = "Запас",
+					label = "Запас материала",
 					unit = "%",
 					type = InputFieldType.PERCENT,
 					defaultValue = 10.0,
-					hint = "Процент запаса материала"
+					hint = "Процент запаса материала (10% для простых форм, 15% для сложных)"
 				)
 			),
 			resultFields = listOf(
@@ -1024,32 +1150,39 @@ object CalculatorRepository {
 					unit = "м²"
 				),
 				ResultFieldDefinition(
-					id = "total_weight",
-					label = "Общий вес",
-					unit = "кг"
+					id = "sheets_count",
+					label = "Количество листов",
+					unit = "шт"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "roof_garage",
-					title = "Крыша гаража",
-					description = "Расчёт кровельных материалов для односкатной крыши гаража.",
-					inputSummary = "Длина 6 м, ширина 4 м, угол 15°, вес материала 5 кг/м², запас 10%",
-					resultSummary = "Площадь 24,8 м², материала 27,3 м², вес 124 кг"
+					id = "roof_gable_house",
+					title = "Двускатная крыша 6×8 м",
+					description = "Дом 6×8 метров, двускатная крыша, металлочерепица",
+					inputSummary = "Длина дома: 8 м, Ширина дома: 6 м, Тип: Двускатная, Угол: 30°, Свес: 0.5 м, Лист: 1.18×0.35 м, Запас: 10%",
+					resultSummary = "Площадь: 76.38 м², Листов: 185 шт"
 				),
 				UsageExample(
-					id = "roof_house",
-					title = "Двускатная крыша дома",
-					description = "Расчёт кровельных материалов для двускатной крыши частного дома.",
-					inputSummary = "Длина 10 м, ширина 8 м, угол 30°, вес материала 6 кг/м², запас 10%",
-					resultSummary = "Площадь 92,4 м², материала 101,6 м², вес 554 кг"
+					id = "roof_hip_house",
+					title = "Вальмовая крыша 10×10 м",
+					description = "Дом 10×10 метров, вальмовая крыша, профнастил",
+					inputSummary = "Длина дома: 10 м, Ширина дома: 10 м, Тип: Вальмовая, Угол: 25°, Свес: 0.6 м, Лист: 1.0×1.2 м, Запас: 10%",
+					resultSummary = "Площадь: 196.26 м², Листов: 164 шт"
 				),
 				UsageExample(
-					id = "roof_steep",
-					title = "Крутая крыша",
-					description = "Расчёт материалов для крутой крыши с большим углом наклона.",
-					inputSummary = "Длина 12 м, ширина 6 м, угол 45°, вес материала 7 кг/м², запас 10%",
-					resultSummary = "Площадь 101,8 м², материала 112 м², вес 713 кг"
+					id = "roof_single_garage",
+					title = "Односкатная крыша 5×4 м",
+					description = "Гараж 5×4 метра, односкатная крыша, ондулин",
+					inputSummary = "Длина дома: 5 м, Ширина дома: 4 м, Тип: Односкатная, Угол: 15°, Свес: 0.3 м, Лист: 2.0×0.95 м, Запас: 10%",
+					resultSummary = "Площадь: 28.71 м², Листов: 16 шт"
+				),
+				UsageExample(
+					id = "roof_mansard_house",
+					title = "Мансардная крыша 8×6 м",
+					description = "Дом 8×6 метров, мансардная крыша, мягкая черепица",
+					inputSummary = "Длина дома: 8 м, Ширина дома: 6 м, Тип: Мансардная, Угол: 35°, Свес: 0.5 м, Лист: 1.0×1.0 м, Запас: 15%",
+					resultSummary = "Площадь: 123.74 м², Листов: 124 шт"
 				)
 			)
 		)
@@ -1060,7 +1193,7 @@ object CalculatorRepository {
 			id = "brick_blocks",
 			categoryId = CATEGORY_STRUCTURES,
 			name = "Калькулятор кирпича и блоков",
-			shortDescription = "Количество кирпичей, газоблоков и пеноблоков",
+			shortDescription = "Расчёт количества кирпичей, газоблоков и пеноблоков для стены",
 			inputFields = listOf(
 				InputFieldDefinition(
 					id = "wall_length",
@@ -1077,12 +1210,12 @@ object CalculatorRepository {
 					hint = "Высота стены"
 				),
 				InputFieldDefinition(
-					id = "wall_thickness",
+					id = "wall_thickness_bricks",
 					label = "Толщина стены",
-					unit = "м",
-					type = InputFieldType.LENGTH,
-					defaultValue = 0.4,
-					hint = "Толщина стены"
+					unit = null,
+					type = InputFieldType.NUMBER,
+					defaultValue = 1.0,
+					hint = "0.5 - В полкирпича (120 мм), 1 - В кирпич (250 мм), 1.5 - В полтора кирпича (380 мм), 2 - В два кирпича (510 мм)"
 				),
 				InputFieldDefinition(
 					id = "material_type",
@@ -1090,71 +1223,110 @@ object CalculatorRepository {
 					unit = null,
 					type = InputFieldType.INTEGER,
 					defaultValue = 1.0,
-					hint = "1 - Кирпич, 2 - Газоблок, 3 - Пеноблок"
+					hint = "1 - Кирпич одинарный, 2 - Кирпич полуторный, 3 - Кирпич двойной, 4 - Газоблок, 5 - Пеноблок"
 				),
 				InputFieldDefinition(
-					id = "block_length",
-					label = "Длина блока",
-					unit = "см",
+					id = "material_length",
+					label = "Длина",
+					unit = "мм",
 					type = InputFieldType.LENGTH,
-					defaultValue = 20.0,
-					hint = "Длина одного блока"
+					defaultValue = 250.0,
+					hint = "Длина материала в миллиметрах"
 				),
 				InputFieldDefinition(
-					id = "block_width",
-					label = "Ширина блока",
-					unit = "см",
+					id = "material_width",
+					label = "Ширина",
+					unit = "мм",
 					type = InputFieldType.LENGTH,
-					defaultValue = 30.0,
-					hint = "Ширина одного блока"
+					defaultValue = 120.0,
+					hint = "Ширина материала в миллиметрах"
 				),
 				InputFieldDefinition(
-					id = "block_height",
-					label = "Высота блока",
-					unit = "см",
+					id = "material_height",
+					label = "Высота",
+					unit = "мм",
 					type = InputFieldType.LENGTH,
-					defaultValue = 20.0,
-					hint = "Высота одного блока"
+					defaultValue = 65.0,
+					hint = "Высота материала в миллиметрах"
+				),
+				InputFieldDefinition(
+					id = "joint_thickness",
+					label = "Толщина шва",
+					unit = "мм",
+					type = InputFieldType.LENGTH,
+					defaultValue = 10.0,
+					hint = "Толщина шва раствора или клея (для кирпича 10 мм, для блоков 3-5 мм)"
 				),
 				InputFieldDefinition(
 					id = "waste_percent",
-					label = "Запас",
+					label = "Запас материала",
 					unit = "%",
 					type = InputFieldType.PERCENT,
 					defaultValue = 5.0,
-					hint = "Процент запаса на подрезку"
+					hint = "Процент запаса материала (5-10%)"
 				)
 			),
 			resultFields = listOf(
 				ResultFieldDefinition(
-					id = "block_count",
-					label = "Количество блоков",
+					id = "material_count",
+					label = "Количество",
 					unit = "шт"
 				),
 				ResultFieldDefinition(
 					id = "wall_volume",
 					label = "Объём стены",
 					unit = "м³"
+				),
+				ResultFieldDefinition(
+					id = "mortar_volume",
+					label = "Объём раствора/клея",
+					unit = "м³"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "brick_wall",
-					title = "Стена из кирпича",
-					description = "Расчёт количества кирпича для возведения стены.",
-					inputSummary = "Длина 10 м, высота 2,5 м, толщина 0,4 м, кирпич 20×30×20 см, запас 5%",
-					resultSummary = "Потребуется 1667 кирпичей, объём стены 10 м³"
+					id = "brick_single_wall",
+					title = "Стена 10×3 м, кирпич одинарный",
+					description = "Несущая стена, одинарный кирпич, толщина 1.5 кирпича",
+					inputSummary = "Длина: 10 м, Высота: 3 м, Толщина: 1.5 кирпича, Материал: Кирпич одинарный (250×120×65 мм), Шов: 10 мм, Запас: 5%",
+					resultSummary = "Количество: 2394 шт, Раствор: 1.14 м³"
 				),
 				UsageExample(
-					id = "gas_block_house",
-					title = "Дом из газоблоков",
-					description = "Расчёт газоблоков для строительства наружных стен дома.",
-					inputSummary = "Длина 40 м, высота 3 м, толщина 0,4 м, блок 20×30×20 см, запас 5%",
-					resultSummary = "Потребуется 4200 блоков, объём стены 48 м³"
+					id = "gas_block_wall",
+					title = "Стена 8×2.5 м, газоблок",
+					description = "Наружная стена, газоблок, толщина 1 блок",
+					inputSummary = "Длина: 8 м, Высота: 2.5 м, Толщина: 1 блок, Материал: Газоблок (600×300×200 мм), Шов: 3 мм, Запас: 5%",
+					resultSummary = "Количество: 164 шт, Клей: 0.06 м³"
 				),
 				UsageExample(
-					id = "foam_block_garage",
-					title = "Гараж из пеноблоков",
+					id = "brick_half_partition",
+					title = "Перегородка 5×2.5 м, кирпич полуторный",
+					description = "Внутренняя перегородка, полуторный кирпич, толщина 0.5 кирпича",
+					inputSummary = "Длина: 5 м, Высота: 2.5 м, Толщина: 0.5 кирпича, Материал: Кирпич полуторный (250×120×88 мм), Шов: 10 мм, Запас: 5%",
+					resultSummary = "Количество: 250 шт, Раствор: 0.15 м³"
+				),
+				UsageExample(
+					id = "foam_block_wall",
+					title = "Стена 12×3.5 м, пеноблок",
+					description = "Наружная стена, пеноблок, толщина 1 блок",
+					inputSummary = "Длина: 12 м, Высота: 3.5 м, Толщина: 1 блок, Материал: Пеноблок (600×300×200 мм), Шов: 3 мм, Запас: 5%",
+					resultSummary = "Количество: 357 шт, Клей: 0.126 м³"
+				),
+				UsageExample(
+					id = "brick_double_wall",
+					title = "Стена 6×2.8 м, кирпич двойной",
+					description = "Несущая стена, двойной кирпич, толщина 2 кирпича",
+					inputSummary = "Длина: 6 м, Высота: 2.8 м, Толщина: 2 кирпича, Материал: Кирпич двойной (250×120×138 мм), Шов: 10 мм, Запас: 5%",
+					resultSummary = "Количество: 918 шт, Раствор: 0.86 м³"
+				),
+				UsageExample(
+					id = "gas_block_partition",
+					title = "Перегородка 4×2.2 м, газоблок",
+					description = "Внутренняя перегородка, газоблок, толщина 1 блок",
+					inputSummary = "Длина: 4 м, Высота: 2.2 м, Толщина: 1 блок, Материал: Газоблок (600×300×200 мм), Шов: 3 мм, Запас: 5%",
+					resultSummary = "Количество: 81 шт, Клей: 0.026 м³"
+				)
+			)
 					description = "Расчёт пеноблоков для строительства гаража.",
 					inputSummary = "Длина 20 м, высота 2,5 м, толщина 0,3 м, блок 20×30×20 см, запас 5%",
 					resultSummary = "Потребуется 1313 блоков, объём стены 15 м³"
@@ -1168,30 +1340,38 @@ object CalculatorRepository {
 			id = "stairs",
 			categoryId = CATEGORY_STRUCTURES,
 			name = "Калькулятор лестницы",
-			shortDescription = "Угол наклона, количество ступеней, высота и длина пролёта",
+			shortDescription = "Онлайн-калькулятор лестницы рассчитает угол наклона, количество ступеней, высоту и длину пролёта",
 			inputFields = listOf(
 				InputFieldDefinition(
-					id = "floor_height",
-					label = "Высота этажа",
-					unit = "м",
+					id = "total_height",
+					label = "Общая высота подъёма",
+					unit = "мм",
 					type = InputFieldType.LENGTH,
-					hint = "Высота от пола до пола следующего этажа"
+					hint = "Общая высота подъёма от пола до пола следующего этажа"
+				),
+				InputFieldDefinition(
+					id = "step_depth",
+					label = "Глубина ступени",
+					unit = "мм",
+					type = InputFieldType.LENGTH,
+					defaultValue = 300.0,
+					hint = "Глубина проступи (горизонтальная часть ступени)"
 				),
 				InputFieldDefinition(
 					id = "step_height",
 					label = "Высота ступени",
-					unit = "см",
+					unit = "мм",
 					type = InputFieldType.LENGTH,
-					defaultValue = 17.0,
-					hint = "Высота одной ступени"
+					defaultValue = 180.0,
+					hint = "Высота подступенка (вертикальная часть ступени)"
 				),
 				InputFieldDefinition(
-					id = "step_width",
-					label = "Ширина ступени",
-					unit = "см",
-					type = InputFieldType.LENGTH,
-					defaultValue = 30.0,
-					hint = "Ширина проступи"
+					id = "stairs_type",
+					label = "Тип лестницы",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Прямая, 2 - Поворотная 90°, 3 - Поворотная 180°"
 				)
 			),
 			resultFields = listOf(
@@ -1203,35 +1383,61 @@ object CalculatorRepository {
 				ResultFieldDefinition(
 					id = "flight_length",
 					label = "Длина пролёта",
-					unit = "м"
+					unit = "мм"
 				),
 				ResultFieldDefinition(
 					id = "angle",
 					label = "Угол наклона",
 					unit = "°"
+				),
+				ResultFieldDefinition(
+					id = "comfort_formula",
+					label = "Формула удобной лестницы",
+					unit = "мм"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "stairs_standard",
-					title = "Стандартная лестница на второй этаж",
-					description = "Расчёт параметров лестницы для частного дома с высотой этажа 3 м.",
-					inputSummary = "Высота этажа 3 м, высота ступени 17 см, ширина ступени 30 см",
-					resultSummary = "18 ступеней, длина пролёта 5,4 м, угол наклона 29,5°"
+					id = "stairs_optimal_house",
+					title = "Оптимальная лестница для частного дома",
+					description = "Стандартная лестница на второй этаж в частном доме с оптимальными параметрами комфорта",
+					inputSummary = "Высота подъёма: 3000 мм, Высота ступени: 180 мм, Глубина ступени: 300 мм, Тип: Прямая",
+					resultSummary = "17 ступеней, 5100 мм, угол 30.96°, формула 660 мм"
 				),
 				UsageExample(
-					id = "stairs_compact",
-					title = "Компактная лестница",
-					description = "Расчёт лестницы для помещения с ограниченным пространством.",
-					inputSummary = "Высота этажа 2,7 м, высота ступени 18 см, ширина ступени 25 см",
-					resultSummary = "15 ступеней, длина пролёта 3,75 м, угол наклона 35,8°"
+					id = "stairs_cottage",
+					title = "Лестница для коттеджа с высокими потолками",
+					description = "Лестница для помещения с высотой потолков 3.5 метра",
+					inputSummary = "Высота подъёма: 3500 мм, Высота ступени: 175 мм, Глубина ступени: 280 мм, Тип: Прямая",
+					resultSummary = "20 ступеней, 5600 мм, угол 32.01°, формула 630 мм"
 				),
 				UsageExample(
-					id = "stairs_comfortable",
-					title = "Комфортная лестница",
-					description = "Расчёт лестницы с оптимальными параметрами для комфортного подъёма.",
-					inputSummary = "Высота этажа 3,2 м, высота ступени 16 см, ширина ступени 32 см",
-					resultSummary = "20 ступеней, длина пролёта 6,4 м, угол наклона 26,6°"
+					id = "stairs_compact_dacha",
+					title = "Компактная лестница для дачи",
+					description = "Экономия пространства с сохранением комфорта использования",
+					inputSummary = "Высота подъёма: 2800 мм, Высота ступени: 200 мм, Глубина ступени: 250 мм, Тип: Поворотная 90°",
+					resultSummary = "14 ступеней, 3500 мм, угол 38.66°, формула 650 мм"
+				),
+				UsageExample(
+					id = "stairs_basement",
+					title = "Лестница в подвал",
+					description = "Крутая лестница для спуска в подвальное помещение",
+					inputSummary = "Высота подъёма: 2200 мм, Высота ступени: 220 мм, Глубина ступени: 200 мм, Тип: Прямая",
+					resultSummary = "10 ступеней, 2000 мм, угол 47.73°, формула 640 мм"
+				),
+				UsageExample(
+					id = "stairs_elderly",
+					title = "Лестница для пожилых людей",
+					description = "Пологий подъём с комфортными параметрами для людей с ограниченной подвижностью",
+					inputSummary = "Высота подъёма: 3200 мм, Высота ступени: 150 мм, Глубина ступени: 350 мм, Тип: Прямая",
+					resultSummary = "22 ступени, 7700 мм, угол 23.20°, формула 650 мм"
+				),
+				UsageExample(
+					id = "stairs_spiral",
+					title = "Винтовая лестница",
+					description = "Компактное решение для ограниченного пространства",
+					inputSummary = "Высота подъёма: 3000 мм, Высота ступени: 200 мм, Глубина ступени: 200 мм, Тип: Поворотная 180°",
+					resultSummary = "15 ступеней, 3000 мм, угол 45.00°, формула 600 мм"
 				)
 			)
 		)
@@ -1242,38 +1448,83 @@ object CalculatorRepository {
 			id = "gravel",
 			categoryId = CATEGORY_STRUCTURES,
 			name = "Калькулятор щебня",
-			shortDescription = "Количество щебня для фундамента, дорожек, отмостки и подсыпки",
+			shortDescription = "Расчёт количества щебня для фундамента, дорожек, отмостки и подсыпки",
 			inputFields = listOf(
+				InputFieldDefinition(
+					id = "work_type",
+					label = "Тип работ",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Фундамент, 2 - Дорожка, 3 - Отмостка, 4 - Подсыпка, 5 - Свой вариант"
+				),
+				InputFieldDefinition(
+					id = "input_method",
+					label = "Способ ввода данных",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Длина × Ширина, 2 - Площадь, 3 - Объём"
+				),
+				InputFieldDefinition(
+					id = "length",
+					label = "Длина",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					hint = "Длина участка (используется при способе 'Длина × Ширина')"
+				),
+				InputFieldDefinition(
+					id = "width",
+					label = "Ширина",
+					unit = "м",
+					type = InputFieldType.LENGTH,
+					hint = "Ширина участка (используется при способе 'Длина × Ширина')"
+				),
 				InputFieldDefinition(
 					id = "area",
 					label = "Площадь",
 					unit = "м²",
 					type = InputFieldType.AREA,
-					hint = "Площадь для засыпки щебнем"
+					hint = "Площадь участка (используется при способе 'Площадь')"
+				),
+				InputFieldDefinition(
+					id = "volume",
+					label = "Объём",
+					unit = "м³",
+					type = InputFieldType.VOLUME,
+					hint = "Объём (используется при способе 'Объём')"
 				),
 				InputFieldDefinition(
 					id = "layer_thickness",
 					label = "Толщина слоя",
-					unit = "см",
+					unit = "м",
 					type = InputFieldType.LENGTH,
-					defaultValue = 20.0,
+					defaultValue = 0.2,
 					hint = "Толщина слоя щебня"
+				),
+				InputFieldDefinition(
+					id = "fraction_type",
+					label = "Фракция щебня",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 3.0,
+					hint = "1 - 5-10 мм (1500 кг/м³), 2 - 10-20 мм (1450 кг/м³), 3 - 20-40 мм (1400 кг/м³), 4 - 40-70 мм (1350 кг/м³), 5 - Своя"
 				),
 				InputFieldDefinition(
 					id = "gravel_density",
 					label = "Плотность щебня",
 					unit = "кг/м³",
 					type = InputFieldType.NUMBER,
-					defaultValue = 1500.0,
-					hint = "Плотность щебня"
+					defaultValue = 1400.0,
+					hint = "Плотность щебня (автоматически обновляется при выборе фракции)"
 				),
 				InputFieldDefinition(
-					id = "compaction_coefficient",
-					label = "Коэффициент уплотнения",
-					unit = null,
+					id = "waste_percent",
+					label = "Запас материала",
+					unit = "%",
 					type = InputFieldType.NUMBER,
-					defaultValue = 1.3,
-					hint = "Коэффициент уплотнения при трамбовке"
+					defaultValue = 10.0,
+					hint = "Запас материала для компенсации усадки при трамбовке"
 				)
 			),
 			resultFields = listOf(
@@ -1284,24 +1535,62 @@ object CalculatorRepository {
 				),
 				ResultFieldDefinition(
 					id = "gravel_mass",
-					label = "Масса щебня",
+					label = "Вес щебня",
+					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "gravel_volume_with_waste",
+					label = "Объём с запасом",
+					unit = "м³"
+				),
+				ResultFieldDefinition(
+					id = "gravel_mass_with_waste",
+					label = "Вес с запасом",
 					unit = "кг"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
 					id = "gravel_foundation",
-					title = "Подсыпка под фундамент",
-					description = "Расчёт щебня для подсыпки под ленточный фундамент.",
-					inputSummary = "Площадь 20 м², толщина слоя 20 см, плотность 1500 кг/м³, коэффициент 1,3",
-					resultSummary = "Объём 5,2 м³, масса 7800 кг"
+					title = "Подушка под фундамент 8×10 м",
+					description = "Стандартная подушка под ленточный фундамент, щебень фракции 20-40 мм",
+					inputSummary = "Тип: Фундамент, Способ: Длина × Ширина, Длина: 8 м, Ширина: 10 м, Толщина: 0.2 м, Фракция: 20-40 мм, Плотность: 1400 кг/м³, Запас: 10%",
+					resultSummary = "Объём: 16 м³ (22,400 кг), с запасом: 17.6 м³ (24,640 кг)"
 				),
 				UsageExample(
 					id = "gravel_path",
-					title = "Дорожка из щебня",
-					description = "Расчёт щебня для устройства садовой дорожки.",
-					inputSummary = "Площадь 15 м², толщина слоя 15 см, плотность 1500 кг/м³, коэффициент 1,3",
-					resultSummary = "Объём 2,9 м³, масса 4350 кг"
+					title = "Садовая дорожка 15×1 м",
+					description = "Садовая дорожка из щебня, фракция 10-20 мм",
+					inputSummary = "Тип: Дорожка, Способ: Длина × Ширина, Длина: 15 м, Ширина: 1 м, Толщина: 0.1 м, Фракция: 10-20 мм, Плотность: 1450 кг/м³, Запас: 15%",
+					resultSummary = "Объём: 1.5 м³ (2,175 кг), с запасом: 1.725 м³ (2,501 кг)"
+				),
+				UsageExample(
+					id = "gravel_blind_area",
+					title = "Отмостка вокруг дома",
+					description = "Отмостка шириной 1 м вокруг дома 10×12 м, щебень 20-40 мм",
+					inputSummary = "Тип: Отмостка, Способ: Длина × Ширина, Длина: 44 м (периметр), Ширина: 1 м, Толщина: 0.15 м, Фракция: 20-40 мм, Плотность: 1400 кг/м³, Запас: 10%",
+					resultSummary = "Объём: 6.6 м³ (9,240 кг), с запасом: 7.26 м³ (10,164 кг)"
+				),
+				UsageExample(
+					id = "gravel_fill",
+					title = "Подсыпка под плитку 20×15 м",
+					description = "Выравнивающая подсыпка под тротуарную плитку, крупная фракция",
+					inputSummary = "Тип: Подсыпка, Способ: Площадь, Площадь: 300 м², Толщина: 0.08 м, Фракция: 20-40 мм, Плотность: 1400 кг/м³, Запас: 5%",
+					resultSummary = "Объём: 24 м³ (33,600 кг), с запасом: 25.2 м³ (35,280 кг)"
+				),
+				UsageExample(
+					id = "gravel_decorative",
+					title = "Декоративная дорожка с мелким щебнем",
+					description = "Декоративная дорожка из мелкого щебня 5-10 мм",
+					inputSummary = "Тип: Дорожка, Способ: Длина × Ширина, Длина: 10 м, Ширина: 0.8 м, Толщина: 0.05 м, Фракция: 5-10 мм, Плотность: 1500 кг/м³, Запас: 20%",
+					resultSummary = "Объём: 0.4 м³ (600 кг), с запасом: 0.48 м³ (720 кг)"
+				),
+				UsageExample(
+					id = "gravel_large_volume",
+					title = "Большой участок подсыпки",
+					description = "Выравнивание большого участка, объём 50 м³",
+					inputSummary = "Тип: Подсыпка, Способ: Объём, Объём: 50 м³, Фракция: 40-70 мм, Плотность: 1350 кг/м³, Запас: 10%",
+					resultSummary = "Объём: 50 м³ (67,500 кг), с запасом: 55 м³ (74,250 кг)"
 				)
 			)
 		)
@@ -1335,50 +1624,97 @@ object CalculatorRepository {
 					label = "Высота помещения",
 					unit = "м",
 					type = InputFieldType.LENGTH,
+					defaultValue = 2.7,
 					hint = "Высота помещения"
+				),
+				InputFieldDefinition(
+					id = "room_type",
+					label = "Тип помещения",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Жилая комната, 2 - Кухня, 3 - Ванная/туалет, 4 - Офис, 5 - Ресторан/кафе, 6 - Спортзал, 7 - Учебный класс, 8 - Склад, 9 - Производство"
+				),
+				InputFieldDefinition(
+					id = "people_count",
+					label = "Количество людей",
+					unit = "чел",
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "Количество людей в помещении"
 				),
 				InputFieldDefinition(
 					id = "air_exchange_rate",
 					label = "Кратность воздухообмена",
 					unit = "раз/ч",
 					type = InputFieldType.NUMBER,
-					defaultValue = 1.0,
-					hint = "Количество полных замен воздуха в час"
+					hint = "Кратность воздухообмена (опционально, автоматически определяется по типу помещения)"
 				)
 			),
 			resultFields = listOf(
 				ResultFieldDefinition(
-					id = "airflow_rate",
-					label = "Производительность",
-					unit = "м³/ч"
-				),
-				ResultFieldDefinition(
 					id = "room_volume",
 					label = "Объём помещения",
 					unit = "м³"
+				),
+				ResultFieldDefinition(
+					id = "airflow_by_volume",
+					label = "Производительность по объёму",
+					unit = "м³/ч"
+				),
+				ResultFieldDefinition(
+					id = "airflow_by_people",
+					label = "Производительность по людям",
+					unit = "м³/ч"
+				),
+				ResultFieldDefinition(
+					id = "required_airflow",
+					label = "Требуемая производительность",
+					unit = "м³/ч"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
 					id = "ventilation_living_room",
-					title = "Вентиляция гостиной",
-					description = "Расчёт производительности вентиляции для жилой комнаты.",
-					inputSummary = "Длина 5 м, ширина 4 м, высота 2,7 м, кратность 1 раз/ч",
-					resultSummary = "Производительность 54 м³/ч, объём помещения 54 м³"
+					title = "Жилая комната 4×5 м",
+					description = "Спальня или гостиная стандартного размера, высота 2.7 м",
+					inputSummary = "Длина: 4 м, Ширина: 5 м, Высота: 2.7 м, Тип: Жилая комната, Количество людей: 2, Кратность: 1 раз/ч (авто), Норма на человека: 30 м³/ч (авто)",
+					resultSummary = "Объём: 54 м³, По объёму: 54 м³/ч, По людям: 60 м³/ч, Требуемая: 60 м³/ч"
 				),
 				UsageExample(
 					id = "ventilation_kitchen",
-					title = "Вентиляция кухни",
-					description = "Расчёт вентиляции для кухни с повышенной кратностью воздухообмена.",
-					inputSummary = "Длина 4 м, ширина 3 м, высота 2,7 м, кратность 3 раз/ч",
-					resultSummary = "Производительность 97,2 м³/ч, объём помещения 32,4 м³"
+					title = "Кухня 3×4 м с вытяжкой",
+					description = "Кухня стандартного размера с газовой плитой, высота 2.7 м",
+					inputSummary = "Длина: 3 м, Ширина: 4 м, Высота: 2.7 м, Тип: Кухня, Количество людей: 1, Кратность: 3 раз/ч (авто), Норма на человека: 60 м³/ч (авто)",
+					resultSummary = "Объём: 32.4 м³, По объёму: 97.2 м³/ч, По людям: 60 м³/ч, Требуемая: 97.2 м³/ч"
 				),
 				UsageExample(
 					id = "ventilation_bathroom",
-					title = "Вентиляция ванной",
-					description = "Расчёт вентиляции для ванной комнаты с высокой влажностью.",
-					inputSummary = "Длина 2,5 м, ширина 2 м, высота 2,5 м, кратность 5 раз/ч",
-					resultSummary = "Производительность 62,5 м³/ч, объём помещения 12,5 м³"
+					title = "Ванная комната 2×2 м",
+					description = "Санузел небольшого размера, высота 2.5 м",
+					inputSummary = "Длина: 2 м, Ширина: 2 м, Высота: 2.5 м, Тип: Ванная/туалет, Количество людей: 1, Кратность: 3 раз/ч (авто), Норма на человека: 25 м³/ч (авто)",
+					resultSummary = "Объём: 10 м³, По объёму: 30 м³/ч, По людям: 25 м³/ч, Требуемая: 30 м³/ч"
+				),
+				UsageExample(
+					id = "ventilation_office",
+					title = "Офисное помещение 6×8 м",
+					description = "Офис открытого типа для 10 сотрудников, высота 3 м",
+					inputSummary = "Длина: 6 м, Ширина: 8 м, Высота: 3 м, Тип: Офис, Количество людей: 10, Кратность: 2 раз/ч (авто), Норма на человека: 40 м³/ч (авто)",
+					resultSummary = "Объём: 144 м³, По объёму: 288 м³/ч, По людям: 400 м³/ч, Требуемая: 400 м³/ч"
+				),
+				UsageExample(
+					id = "ventilation_restaurant",
+					title = "Ресторан зал 10×12 м",
+					description = "Зал ресторана на 50 посетителей, высота 3.5 м",
+					inputSummary = "Длина: 10 м, Ширина: 12 м, Высота: 3.5 м, Тип: Ресторан/кафе, Количество людей: 50, Кратность: 5 раз/ч (авто), Норма на человека: 60 м³/ч (авто)",
+					resultSummary = "Объём: 420 м³, По объёму: 2100 м³/ч, По людям: 3000 м³/ч, Требуемая: 3000 м³/ч"
+				),
+				UsageExample(
+					id = "ventilation_gym",
+					title = "Спортзал 8×10 м",
+					description = "Спортзал для тренировок, высота 4 м",
+					inputSummary = "Длина: 8 м, Ширина: 10 м, Высота: 4 м, Тип: Спортзал, Количество людей: 15, Кратность: 4 раз/ч (авто), Норма на человека: 80 м³/ч (авто)",
+					resultSummary = "Объём: 320 м³, По объёму: 1280 м³/ч, По людям: 1200 м³/ч, Требуемая: 1280 м³/ч"
 				)
 			)
 		)
@@ -1393,22 +1729,39 @@ object CalculatorRepository {
 			inputFields = listOf(
 				InputFieldDefinition(
 					id = "floor_area",
-					label = "Площадь пола",
+					label = "Площадь помещения",
 					unit = "м²",
 					type = InputFieldType.AREA,
+					defaultValue = 10.0,
 					hint = "Площадь обогреваемого пола"
 				),
 				InputFieldDefinition(
-					id = "power_per_sqm",
-					label = "Мощность на м²",
-					unit = "Вт/м²",
-					type = InputFieldType.POWER,
-					defaultValue = 150.0,
-					hint = "Мощность нагревательного элемента на квадратный метр"
+					id = "room_type",
+					label = "Тип помещения",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Ванная комната, 2 - Кухня, 3 - Гостиная, 4 - Спальня, 5 - Балкон/лоджия"
+				),
+				InputFieldDefinition(
+					id = "insulation_type",
+					label = "Тип утепления пола",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 2.0,
+					hint = "1 - Хорошее утепление, 2 - Среднее утепление, 3 - Слабое утепление"
+				),
+				InputFieldDefinition(
+					id = "desired_temperature",
+					label = "Желаемая температура",
+					unit = "°C",
+					type = InputFieldType.NUMBER,
+					defaultValue = 25.0,
+					hint = "Желаемая температура пола"
 				),
 				InputFieldDefinition(
 					id = "usage_hours",
-					label = "Часов работы в день",
+					label = "Часы работы в день",
 					unit = "ч",
 					type = InputFieldType.NUMBER,
 					defaultValue = 8.0,
@@ -1416,51 +1769,85 @@ object CalculatorRepository {
 				),
 				InputFieldDefinition(
 					id = "electricity_price",
-					label = "Цена электроэнергии",
-					unit = "руб/кВт·ч",
+					label = "Стоимость электроэнергии",
+					unit = "₽/кВт⋅ч",
 					type = InputFieldType.NUMBER,
-					defaultValue = 5.0,
+					defaultValue = 5.5,
 					hint = "Стоимость одного киловатт-часа"
 				)
 			),
 			resultFields = listOf(
 				ResultFieldDefinition(
-					id = "total_power",
+					id = "recommended_power",
+					label = "Рекомендуемая мощность",
+					unit = "Вт/м²"
+				),
+				ResultFieldDefinition(
+					id = "total_power_watts",
+					label = "Общая мощность",
+					unit = "Вт"
+				),
+				ResultFieldDefinition(
+					id = "total_power_kw",
 					label = "Общая мощность",
 					unit = "кВт"
 				),
 				ResultFieldDefinition(
 					id = "daily_consumption",
-					label = "Суточное потребление",
-					unit = "кВт·ч"
+					label = "Потребление в день",
+					unit = "кВт⋅ч"
+				),
+				ResultFieldDefinition(
+					id = "monthly_consumption",
+					label = "Потребление в месяц",
+					unit = "кВт⋅ч"
+				),
+				ResultFieldDefinition(
+					id = "daily_cost",
+					label = "Стоимость в день",
+					unit = "₽"
 				),
 				ResultFieldDefinition(
 					id = "monthly_cost",
-					label = "Месячные затраты",
-					unit = "руб"
+					label = "Стоимость в месяц",
+					unit = "₽"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
 					id = "heated_floor_bathroom",
-					title = "Тёплый пол в ванной",
-					description = "Расчёт мощности и затрат на электрический тёплый пол в ванной комнате.",
-					inputSummary = "Площадь 6 м², мощность 150 Вт/м², работа 8 ч/день, цена 5 руб/кВт·ч",
-					resultSummary = "Мощность 0,9 кВт, потребление 7,2 кВт·ч/день, затраты 1080 руб/мес"
+					title = "Ванная комната 5 м²",
+					description = "Ванная комната с хорошим утеплением, температура 28°C",
+					inputSummary = "Площадь: 5 м², Тип: Ванная, Утепление: Хорошее, Температура: 28°C, Часы работы: 8 ч/день, Стоимость: 5.5 ₽/кВт⋅ч",
+					resultSummary = "Мощность: ~127.5 Вт/м², Общая: ~637.5 Вт, Потребление: ~25.5 кВт⋅ч/день, Стоимость: ~140 ₽/день"
 				),
 				UsageExample(
 					id = "heated_floor_kitchen",
-					title = "Тёплый пол на кухне",
-					description = "Расчёт тёплого пола для кухни среднего размера.",
-					inputSummary = "Площадь 12 м², мощность 150 Вт/м², работа 6 ч/день, цена 5 руб/кВт·ч",
-					resultSummary = "Мощность 1,8 кВт, потребление 10,8 кВт·ч/день, затраты 1620 руб/мес"
+					title = "Кухня 12 м²",
+					description = "Кухня со средним утеплением, температура 25°C",
+					inputSummary = "Площадь: 12 м², Тип: Кухня, Утепление: Среднее, Температура: 25°C, Часы работы: 10 ч/день, Стоимость: 5.5 ₽/кВт⋅ч",
+					resultSummary = "Мощность: ~120 Вт/м², Общая: ~1440 Вт, Потребление: ~172.8 кВт⋅ч/день, Стоимость: ~950 ₽/день"
 				),
 				UsageExample(
 					id = "heated_floor_living_room",
-					title = "Тёплый пол в гостиной",
-					description = "Расчёт тёплого пола для большой гостиной с постоянным обогревом.",
-					inputSummary = "Площадь 20 м², мощность 150 Вт/м², работа 12 ч/день, цена 5 руб/кВт·ч",
-					resultSummary = "Мощность 3 кВт, потребление 36 кВт·ч/день, затраты 5400 руб/мес"
+					title = "Гостиная 20 м²",
+					description = "Гостиная с хорошим утеплением, температура 24°C",
+					inputSummary = "Площадь: 20 м², Тип: Гостиная, Утепление: Хорошее, Температура: 24°C, Часы работы: 12 ч/день, Стоимость: 5.5 ₽/кВт⋅ч",
+					resultSummary = "Мощность: ~90 Вт/м², Общая: ~1800 Вт, Потребление: ~432 кВт⋅ч/день, Стоимость: ~2376 ₽/день"
+				),
+				UsageExample(
+					id = "heated_floor_bedroom",
+					title = "Спальня 15 м²",
+					description = "Спальня со средним утеплением, температура 23°C",
+					inputSummary = "Площадь: 15 м², Тип: Спальня, Утепление: Среднее, Температура: 23°C, Часы работы: 6 ч/день, Стоимость: 5.5 ₽/кВт⋅ч",
+					resultSummary = "Мощность: ~90 Вт/м², Общая: ~1350 Вт, Потребление: ~121.5 кВт⋅ч/день, Стоимость: ~668 ₽/день"
+				),
+				UsageExample(
+					id = "heated_floor_balcony",
+					title = "Балкон 6 м²",
+					description = "Балкон со слабым утеплением, температура 20°C",
+					inputSummary = "Площадь: 6 м², Тип: Балкон, Утепление: Слабое, Температура: 20°C, Часы работы: 24 ч/день, Стоимость: 5.5 ₽/кВт⋅ч",
+					resultSummary = "Мощность: ~234 Вт/м², Общая: ~1404 Вт, Потребление: ~202.2 кВт⋅ч/день, Стоимость: ~1112 ₽/день"
 				)
 			)
 		)
@@ -1471,77 +1858,133 @@ object CalculatorRepository {
 			id = "water_pipes",
 			categoryId = CATEGORY_ENGINEERING,
 			name = "Калькулятор водопроводных труб",
-			shortDescription = "Диаметр, пропускная способность и гидравлические параметры",
+			shortDescription = "Расчёт диаметра, пропускной способности и гидравлических параметров водопроводных труб",
 			inputFields = listOf(
+				InputFieldDefinition(
+					id = "calculation_type",
+					label = "Тип расчёта",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - По диаметру, 2 - По расходу, 3 - По давлению"
+				),
 				InputFieldDefinition(
 					id = "pipe_diameter",
 					label = "Диаметр трубы",
 					unit = "мм",
 					type = InputFieldType.LENGTH,
-					hint = "Внутренний диаметр трубы"
+					hint = "Внутренний диаметр трубы (используется при расчёте по диаметру)"
 				),
 				InputFieldDefinition(
-					id = "pipe_length",
-					label = "Длина трубы",
-					unit = "м",
-					type = InputFieldType.LENGTH,
-					hint = "Длина трубопровода"
+					id = "water_flow",
+					label = "Расход воды",
+					unit = "м³/с",
+					type = InputFieldType.NUMBER,
+					hint = "Расход воды (используется при расчёте по расходу)"
 				),
 				InputFieldDefinition(
 					id = "flow_velocity",
 					label = "Скорость потока",
 					unit = "м/с",
 					type = InputFieldType.NUMBER,
-					defaultValue = 1.5,
+					defaultValue = 2.0,
 					hint = "Скорость движения воды в трубе"
 				),
 				InputFieldDefinition(
-					id = "roughness",
-					label = "Шероховатость",
-					unit = "мм",
+					id = "pipe_material",
+					label = "Материал трубы",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Сталь, 2 - Медь, 3 - Пластик, 4 - Чугун"
+				),
+				InputFieldDefinition(
+					id = "pipe_length",
+					label = "Длина трубы",
+					unit = "м",
 					type = InputFieldType.LENGTH,
-					defaultValue = 0.1,
-					hint = "Шероховатость внутренней поверхности трубы"
+					hint = "Длина трубопровода (для расчёта потерь давления)"
 				)
 			),
 			resultFields = listOf(
 				ResultFieldDefinition(
-					id = "flow_rate",
-					label = "Пропускная способность",
-					unit = "л/мин"
+					id = "calculated_diameter",
+					label = "Диаметр трубы",
+					unit = "мм"
 				),
 				ResultFieldDefinition(
-					id = "pressure_loss",
-					label = "Потери давления",
-					unit = "Па"
+					id = "flow_rate_m3s",
+					label = "Расход воды",
+					unit = "м³/с"
+				),
+				ResultFieldDefinition(
+					id = "flow_rate_ls",
+					label = "Расход воды",
+					unit = "л/с"
+				),
+				ResultFieldDefinition(
+					id = "flow_rate_m3h",
+					label = "Расход воды",
+					unit = "м³/ч"
+				),
+				ResultFieldDefinition(
+					id = "flow_velocity_calc",
+					label = "Скорость потока",
+					unit = "м/с"
 				),
 				ResultFieldDefinition(
 					id = "pipe_area",
 					label = "Площадь сечения",
 					unit = "м²"
+				),
+				ResultFieldDefinition(
+					id = "pressure_loss",
+					label = "Потери давления",
+					unit = "бар"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "water_pipes_apartment",
-					title = "Водопровод в квартире",
-					description = "Расчёт параметров водопроводной трубы для квартиры.",
-					inputSummary = "Диаметр 20 мм, длина 15 м, скорость потока 1,5 м/с, шероховатость 0,1 мм",
-					resultSummary = "Пропускная способность 28,3 л/мин, потери давления 1688 Па"
+					id = "water_pipes_private_house",
+					title = "Расчёт диаметра для частного дома",
+					description = "Водопровод для частного дома с расходом 50 л/с",
+					inputSummary = "Тип: По расходу, Расход: 0.05 м³/с (50 л/с), Скорость: 2 м/с, Материал: Пластик, Длина: 50 м",
+					resultSummary = "Диаметр: ~180 мм, Скорость: 2 м/с, Расход: 0.05 м³/с, Потери: ~0.01 бар"
 				),
 				UsageExample(
-					id = "water_pipes_house",
-					title = "Водопровод в частном доме",
-					description = "Расчёт водопровода для частного дома с большей длиной.",
-					inputSummary = "Диаметр 25 мм, длина 30 м, скорость потока 1,5 м/с, шероховатость 0,1 мм",
-					resultSummary = "Пропускная способность 44,2 л/мин, потери давления 1350 Па"
+					id = "water_pipes_existing_pipe",
+					title = "Пропускная способность существующей трубы",
+					description = "Проверка пропускной способности трубы 150 мм",
+					inputSummary = "Тип: По диаметру, Диаметр: 150 мм, Скорость: 1.5 м/с, Материал: Сталь, Длина: 100 м",
+					resultSummary = "Расход: ~26.5 л/с (95.4 м³/ч), Скорость: 1.5 м/с, Потери: ~0.02 бар"
 				),
 				UsageExample(
-					id = "water_pipes_high_flow",
-					title = "Труба с высокой пропускной способностью",
-					description = "Расчёт трубы для системы с высоким расходом воды.",
-					inputSummary = "Диаметр 32 мм, длина 20 м, скорость потока 2 м/с, шероховатость 0,1 мм",
-					resultSummary = "Пропускная способность 96,5 л/мин, потери давления 2500 Па"
+					id = "water_pipes_long_pipeline",
+					title = "Потери давления в длинном трубопроводе",
+					description = "Расчёт потерь давления в водопроводе 200 м",
+					inputSummary = "Тип: По диаметру, Диаметр: 100 мм, Расход: 0.02 м³/с (20 л/с), Материал: Пластик, Длина: 200 м",
+					resultSummary = "Скорость: ~2.55 м/с, Расход: 0.02 м³/с, Потери: ~0.1 бар"
+				),
+				UsageExample(
+					id = "water_pipes_material_comparison",
+					title = "Сравнение материалов труб",
+					description = "Сравнение стальной и пластиковой трубы",
+					inputSummary = "Тип: По диаметру, Диаметр: 100 мм, Расход: 0.01 м³/с, Материал: Сталь/Пластик, Длина: 100 м",
+					resultSummary = "Сталь: потери ~0.2 бар, Пластик: потери ~0.14 бар"
+				),
+				UsageExample(
+					id = "water_pipes_multi_story",
+					title = "Расчёт для многоэтажного дома",
+					description = "Водопровод для 10-этажного дома",
+					inputSummary = "Тип: По расходу, Расход: 0.3 м³/с (300 л/с), Скорость: 2.5 м/с, Материал: Сталь, Длина: 500 м",
+					resultSummary = "Диаметр: ~390 мм (округляем до 400 мм), Скорость: ~2.39 м/с"
+				),
+				UsageExample(
+					id = "water_pipes_heating",
+					title = "Расчёт для системы отопления",
+					description = "Трубопровод для системы отопления",
+					inputSummary = "Тип: По расходу, Расход: 0.08 м³/с (80 л/с), Скорость: 1.8 м/с, Материал: Медь, Длина: 150 м",
+					resultSummary = "Диаметр: ~240 мм (округляем до 250 мм), Скорость: ~1.63 м/с"
 				)
 			)
 		)
@@ -1562,7 +2005,13 @@ object CalculatorRepository {
 					unit = null,
 					type = InputFieldType.INTEGER,
 					defaultValue = 1.0,
-					hint = "1 - Фундамент, 2 - Плита, 3 - Стена, 4 - Колонна"
+					hint = "Выберите тип конструкции",
+					options = listOf(
+						Pair(1.0, "Фундамент"),
+						Pair(2.0, "Плита"),
+						Pair(3.0, "Стена"),
+						Pair(4.0, "Колонна")
+					)
 				),
 				InputFieldDefinition(
 					id = "length",
@@ -1599,7 +2048,17 @@ object CalculatorRepository {
 					unit = "мм",
 					type = InputFieldType.LENGTH,
 					defaultValue = 12.0,
-					hint = "Диаметр арматурного стержня (обычно 8-16 мм)"
+					hint = "Выберите диаметр арматурного стержня",
+					options = listOf(
+						Pair(6.0, "6 мм"),
+						Pair(8.0, "8 мм"),
+						Pair(10.0, "10 мм"),
+						Pair(12.0, "12 мм"),
+						Pair(14.0, "14 мм"),
+						Pair(16.0, "16 мм"),
+						Pair(18.0, "18 мм"),
+						Pair(20.0, "20 мм")
+					)
 				),
 				InputFieldDefinition(
 					id = "layers_count",
@@ -1671,14 +2130,29 @@ object CalculatorRepository {
 			id = "cable_section",
 			categoryId = CATEGORY_METAL_ELECTRICITY,
 			name = "Калькулятор сечения кабеля",
-			shortDescription = "Расчёт оптимального сечения по мощности, длине линии и току",
+			shortDescription = "Онлайн-калькулятор сечения кабеля поможет рассчитать оптимальное сечение проводника по мощности, длине линии и току нагрузки",
 			inputFields = listOf(
+				InputFieldDefinition(
+					id = "calculation_type",
+					label = "Тип расчёта",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - По мощности, 2 - По току"
+				),
 				InputFieldDefinition(
 					id = "power",
 					label = "Мощность",
 					unit = "кВт",
 					type = InputFieldType.POWER,
-					hint = "Мощность нагрузки"
+					hint = "Мощность нагрузки (используется при расчёте по мощности)"
+				),
+				InputFieldDefinition(
+					id = "current",
+					label = "Ток",
+					unit = "А",
+					type = InputFieldType.NUMBER,
+					hint = "Ток нагрузки (используется при расчёте по току)"
 				),
 				InputFieldDefinition(
 					id = "voltage",
@@ -1696,60 +2170,123 @@ object CalculatorRepository {
 					hint = "Длина кабеля"
 				),
 				InputFieldDefinition(
+					id = "conductor_material",
+					label = "Материал проводника",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Медь, 2 - Алюминий"
+				),
+				InputFieldDefinition(
+					id = "network_type",
+					label = "Тип сети",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Однофазная, 2 - Трёхфазная"
+				),
+				InputFieldDefinition(
 					id = "power_factor",
 					label = "Коэффициент мощности",
 					unit = null,
 					type = InputFieldType.NUMBER,
-					defaultValue = 0.9,
-					hint = "Коэффициент мощности нагрузки"
+					defaultValue = 0.8,
+					hint = "Коэффициент мощности (cosφ)"
 				),
 				InputFieldDefinition(
 					id = "voltage_drop_percent",
-					label = "Допустимое падение напряжения",
+					label = "Допустимые потери напряжения",
 					unit = "%",
 					type = InputFieldType.PERCENT,
-					defaultValue = 5.0,
-					hint = "Максимальное допустимое падение напряжения"
+					defaultValue = 3.0,
+					hint = "Допустимые потери напряжения"
+				),
+				InputFieldDefinition(
+					id = "ambient_temperature",
+					label = "Температура окружающей среды",
+					unit = "°C",
+					type = InputFieldType.NUMBER,
+					defaultValue = 25.0,
+					hint = "Температура окружающей среды"
+				),
+				InputFieldDefinition(
+					id = "installation_type",
+					label = "Способ прокладки",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Открытая прокладка, 2 - Закрытая прокладка, 3 - Подземная прокладка"
 				)
 			),
 			resultFields = listOf(
 				ResultFieldDefinition(
-					id = "current",
-					label = "Ток",
+					id = "calculated_current",
+					label = "Ток нагрузки",
 					unit = "А"
 				),
 				ResultFieldDefinition(
 					id = "cable_section",
-					label = "Сечение кабеля",
+					label = "Рекомендуемое сечение",
+					unit = "мм²"
+				),
+				ResultFieldDefinition(
+					id = "standard_section",
+					label = "Стандартное сечение",
 					unit = "мм²"
 				),
 				ResultFieldDefinition(
 					id = "voltage_drop",
-					label = "Падение напряжения",
+					label = "Потери напряжения",
 					unit = "В"
+				),
+				ResultFieldDefinition(
+					id = "voltage_drop_percent_calc",
+					label = "Потери напряжения",
+					unit = "%"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "cable_section_room",
-					title = "Розеточная линия на комнату",
-					description = "Расчёт сечения кабеля для розеточной группы в комнате.",
-					inputSummary = "Мощность 3 кВт, напряжение 220 В, длина 15 м, коэффициент мощности 0,9, падение 5%",
-					resultSummary = "Ток 15,2 А, сечение кабеля 2,3 мм², падение напряжения 11 В"
+					id = "cable_section_sockets",
+					title = "Кабель для розеток в квартире",
+					description = "Однофазная сеть 220В, нагрузка 3.5 кВт, длина 20 м",
+					inputSummary = "Тип: По мощности, Мощность: 3.5 кВт, Напряжение: 220 В, Длина: 20 м, Материал: Медь, Тип сети: Однофазная, cosφ: 0.9, Потери: 3%, Температура: 25°C, Прокладка: Открытая",
+					resultSummary = "Ток: ~17.7 А, Сечение: ~2.5 мм², Потери: ~0.005%"
 				),
 				UsageExample(
-					id = "cable_section_kitchen",
-					title = "Линия для кухонной техники",
-					description = "Расчёт кабеля для подключения мощной кухонной техники.",
-					inputSummary = "Мощность 5 кВт, напряжение 220 В, длина 10 м, коэффициент мощности 0,9, падение 5%",
-					resultSummary = "Ток 25,3 А, сечение кабеля 3,8 мм², падение напряжения 11 В"
+					id = "cable_section_lighting",
+					title = "Кабель для освещения",
+					description = "Однофазная сеть, нагрузка 1.2 кВт, длина 30 м",
+					inputSummary = "Тип: По мощности, Мощность: 1.2 кВт, Напряжение: 220 В, Длина: 30 м, Материал: Медь, Тип сети: Однофазная, cosφ: 0.95, Потери: 3%, Температура: 25°C, Прокладка: Открытая",
+					resultSummary = "Ток: ~5.74 А, Сечение: ~1.5 мм², Потери: ~0.002%"
 				),
 				UsageExample(
-					id = "cable_section_heater",
-					title = "Кабель для электрического котла",
-					description = "Расчёт кабеля для подключения электрического отопительного котла.",
-					inputSummary = "Мощность 9 кВт, напряжение 220 В, длина 20 м, коэффициент мощности 1,0, падение 5%",
-					resultSummary = "Ток 40,9 А, сечение кабеля 6,1 мм², падение напряжения 11 В"
+					id = "cable_section_stove",
+					title = "Кабель для электроплиты 7 кВт",
+					description = "Однофазная сеть, плита мощностью 7 кВт, длина 15 м",
+					inputSummary = "Тип: По мощности, Мощность: 7 кВт, Напряжение: 220 В, Длина: 15 м, Материал: Медь, Тип сети: Однофазная, cosφ: 1.0, Потери: 3%, Температура: 25°C, Прокладка: Открытая",
+					resultSummary = "Ток: ~31.8 А, Сечение: ~4-6 мм², Потери: ~0.002%"
+				),
+				UsageExample(
+					id = "cable_section_three_phase",
+					title = "Трёхфазная линия для коттеджа",
+					description = "Трёхфазная сеть 380В, нагрузка 15 кВт, длина 50 м",
+					inputSummary = "Тип: По мощности, Мощность: 15 кВт, Напряжение: 380 В, Длина: 50 м, Материал: Медь, Тип сети: Трёхфазная, cosφ: 0.9, Потери: 3%, Температура: 25°C, Прокладка: Открытая",
+					resultSummary = "Ток фазы: ~25.3 А, Сечение: ~4 мм², Потери: ~0.003%"
+				),
+				UsageExample(
+					id = "cable_section_aluminum",
+					title = "Алюминиевый кабель для гаража",
+					description = "Однофазная сеть, нагрузка 5 кВт, длина 40 м, алюминий",
+					inputSummary = "Тип: По мощности, Мощность: 5 кВт, Напряжение: 220 В, Длина: 40 м, Материал: Алюминий, Тип сети: Однофазная, cosφ: 0.9, Потери: 3%, Температура: 25°C, Прокладка: Открытая",
+					resultSummary = "Ток: ~25.25 А, Сечение: ~6 мм² (алюминий), Потери: ~0.002%"
+				),
+				UsageExample(
+					id = "cable_section_long_line",
+					title = "Длинная линия с большими потерями",
+					description = "Однофазная сеть, нагрузка 2 кВт, длина 100 м, допустимые потери 5%",
+					inputSummary = "Тип: По мощности, Мощность: 2 кВт, Напряжение: 220 В, Длина: 100 м, Материал: Медь, Тип сети: Однофазная, cosφ: 0.9, Потери: 5%, Температура: 25°C, Прокладка: Открытая",
+					resultSummary = "Ток: ~10.1 А, Сечение: ~10 мм², Потери: ~5%"
 				)
 			)
 		)
@@ -1760,14 +2297,38 @@ object CalculatorRepository {
 			id = "electrical",
 			categoryId = CATEGORY_METAL_ELECTRICITY,
 			name = "Калькулятор электрики",
-			shortDescription = "Расчёт сечения кабеля и мощности автоматов",
+			shortDescription = "Расчёт сечения кабеля и мощности автоматов для электропроводки",
 			inputFields = listOf(
 				InputFieldDefinition(
-					id = "total_power",
-					label = "Общая мощность",
+					id = "calculation_type",
+					label = "Тип расчёта",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 3.0,
+					hint = "1 - Сечение кабеля, 2 - Автомат, 3 - Оба расчёта"
+				),
+				InputFieldDefinition(
+					id = "input_method",
+					label = "Способ ввода данных",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - По мощности (кВт), 2 - По току (А)"
+				),
+				InputFieldDefinition(
+					id = "power",
+					label = "Мощность нагрузки",
 					unit = "кВт",
 					type = InputFieldType.POWER,
-					hint = "Суммарная мощность всех потребителей"
+					defaultValue = 2.5,
+					hint = "Мощность нагрузки (используется при вводе по мощности)"
+				),
+				InputFieldDefinition(
+					id = "current",
+					label = "Ток нагрузки",
+					unit = "А",
+					type = InputFieldType.NUMBER,
+					hint = "Ток нагрузки (используется при вводе по току)"
 				),
 				InputFieldDefinition(
 					id = "voltage",
@@ -1775,70 +2336,144 @@ object CalculatorRepository {
 					unit = "В",
 					type = InputFieldType.NUMBER,
 					defaultValue = 220.0,
-					hint = "Напряжение сети"
+					hint = "12 В, 24 В, 220 В, 380 В"
 				),
 				InputFieldDefinition(
-					id = "phase_count",
-					label = "Количество фаз",
+					id = "network_type",
+					label = "Тип сети",
 					unit = null,
 					type = InputFieldType.INTEGER,
 					defaultValue = 1.0,
-					hint = "Количество фаз (1 или 3)"
+					hint = "1 - Однофазная (220 В), 2 - Трёхфазная (380 В)"
 				),
 				InputFieldDefinition(
 					id = "cable_length",
 					label = "Длина кабеля",
 					unit = "м",
 					type = InputFieldType.LENGTH,
-					hint = "Длина кабеля от щита до нагрузки"
+					defaultValue = 15.0,
+					hint = "Длина кабеля"
 				),
 				InputFieldDefinition(
-					id = "safety_factor",
-					label = "Коэффициент запаса",
+					id = "conductor_material",
+					label = "Материал проводника",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Медь, 2 - Алюминий"
+				),
+				InputFieldDefinition(
+					id = "installation_type",
+					label = "Способ прокладки",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Открытая прокладка, 2 - Скрытая прокладка, 3 - В кабель-канале"
+				),
+				InputFieldDefinition(
+					id = "power_factor",
+					label = "Коэффициент мощности",
 					unit = null,
 					type = InputFieldType.NUMBER,
-					defaultValue = 1.25,
-					hint = "Коэффициент запаса для автомата"
+					defaultValue = 0.9,
+					hint = "Коэффициент мощности (cos φ), 0.8-0.9 для бытовых нагрузок"
+				),
+				InputFieldDefinition(
+					id = "voltage_drop_percent",
+					label = "Допустимое падение напряжения",
+					unit = "%",
+					type = InputFieldType.PERCENT,
+					defaultValue = 3.0,
+					hint = "Обычно 3% для силовых сетей, до 5% для освещения"
+				),
+				InputFieldDefinition(
+					id = "breaker_type",
+					label = "Тип автомата",
+					unit = null,
+					type = InputFieldType.INTEGER,
+					defaultValue = 1.0,
+					hint = "1 - Тип C (бытовые), 2 - Тип B (слабоиндуктивные), 3 - Тип D (высокие пусковые токи)"
 				)
 			),
 			resultFields = listOf(
 				ResultFieldDefinition(
-					id = "current",
-					label = "Расчётный ток",
-					unit = "А"
-				),
-				ResultFieldDefinition(
-					id = "breaker_current",
-					label = "Номинальный ток автомата",
+					id = "calculated_current",
+					label = "Ток нагрузки",
 					unit = "А"
 				),
 				ResultFieldDefinition(
 					id = "cable_section",
-					label = "Сечение кабеля",
+					label = "Рекомендуемое сечение",
 					unit = "мм²"
+				),
+				ResultFieldDefinition(
+					id = "standard_section",
+					label = "Стандартное сечение",
+					unit = "мм²"
+				),
+				ResultFieldDefinition(
+					id = "breaker_current",
+					label = "Номинал автомата",
+					unit = "А"
+				),
+				ResultFieldDefinition(
+					id = "breaker_type_result",
+					label = "Тип автомата",
+					unit = null
+				),
+				ResultFieldDefinition(
+					id = "voltage_drop",
+					label = "Потери напряжения",
+					unit = "В"
+				),
+				ResultFieldDefinition(
+					id = "voltage_drop_percent_calc",
+					label = "Потери напряжения",
+					unit = "%"
 				)
 			),
 			usageExamples = listOf(
 				UsageExample(
-					id = "electrical_apartment",
-					title = "Вводной кабель на квартиру",
-					description = "Расчёт вводного кабеля и автомата для квартиры.",
-					inputSummary = "Мощность 10 кВт, напряжение 220 В, 1 фаза, длина 25 м, коэффициент запаса 1,25",
-					resultSummary = "Ток 45,5 А, автомат 57 А, сечение кабеля 6,8 мм²"
+					id = "electrical_sockets",
+					title = "Розетки в квартире",
+					description = "Группа розеток в квартире, мощность 2.5 кВт",
+					inputSummary = "Тип: Оба расчёта, Ввод: По мощности, Мощность: 2.5 кВт, Напряжение: 220 В, Тип сети: Однофазная, Длина: 15 м, Материал: Медь, Прокладка: Открытая, cosφ: 0.9, Потери: 3%, Автомат: Тип C",
+					resultSummary = "Ток: 12.6 А, Сечение: 4 мм² (медь), Автомат: 16 А (тип C), Потери: 0.8%"
 				),
 				UsageExample(
-					id = "electrical_house",
-					title = "Вводной кабель на частный дом",
-					description = "Расчёт вводного кабеля для частного дома с трёхфазным подключением.",
-					inputSummary = "Мощность 15 кВт, напряжение 380 В, 3 фазы, длина 30 м, коэффициент запаса 1,25",
-					resultSummary = "Ток 22,8 А, автомат 29 А, сечение кабеля 3,4 мм²"
+					id = "electrical_lighting",
+					title = "Освещение в доме",
+					description = "Группа освещения, мощность 0.5 кВт",
+					inputSummary = "Тип: Оба расчёта, Ввод: По мощности, Мощность: 0.5 кВт, Напряжение: 220 В, Тип сети: Однофазная, Длина: 25 м, Материал: Медь, Прокладка: Открытая, cosφ: 0.95, Потери: 3%, Автомат: Тип C",
+					resultSummary = "Ток: 2.4 А, Сечение: 1.5 мм² (медь), Автомат: 6 А (тип C), Потери: 0.5%"
 				),
 				UsageExample(
 					id = "electrical_stove",
-					title = "Варочная панель",
-					description = "Расчёт кабеля и автомата для подключения электрической варочной панели.",
-					inputSummary = "Мощность 7 кВт, напряжение 220 В, 1 фаза, длина 8 м, коэффициент запаса 1,25",
-					resultSummary = "Ток 31,8 А, автомат 40 А, сечение кабеля 4,8 мм²"
+					title = "Электрическая плита",
+					description = "Электрическая плита мощностью 7.5 кВт",
+					inputSummary = "Тип: Оба расчёта, Ввод: По мощности, Мощность: 7.5 кВт, Напряжение: 220 В, Тип сети: Однофазная, Длина: 8 м, Материал: Медь, Прокладка: Открытая, cosφ: 0.9, Потери: 3%, Автомат: Тип C",
+					resultSummary = "Ток: 37.9 А, Сечение: 10 мм² (медь), Автомат: 50 А (тип C), Потери: 1.2%"
+				),
+				UsageExample(
+					id = "electrical_motor",
+					title = "Трёхфазный двигатель",
+					description = "Трёхфазный асинхронный двигатель 5.5 кВт",
+					inputSummary = "Тип: Оба расчёта, Ввод: По мощности, Мощность: 5.5 кВт, Напряжение: 380 В, Тип сети: Трёхфазная, Длина: 30 м, Материал: Медь, Прокладка: Открытая, cosφ: 0.85, Потери: 3%, Автомат: Тип D",
+					resultSummary = "Ток: 9.8 А, Сечение: 2.5 мм² (медь), Автомат: 16 А (тип D), Потери: 2.1%"
+				),
+				UsageExample(
+					id = "electrical_aluminum",
+					title = "Алюминиевый кабель для дома",
+					description = "Вводной кабель в частный дом, мощность 10 кВт",
+					inputSummary = "Тип: Оба расчёта, Ввод: По мощности, Мощность: 10 кВт, Напряжение: 220 В, Тип сети: Однофазная, Длина: 50 м, Материал: Алюминий, Прокладка: Открытая, cosφ: 0.9, Потери: 3%, Автомат: Тип C",
+					resultSummary = "Ток: 50.5 А, Сечение: 16 мм² (алюминий), Автомат: 63 А (тип C), Потери: 2.8%"
+				),
+				UsageExample(
+					id = "electrical_outdoor",
+					title = "Освещение на улице",
+					description = "Уличное освещение, мощность 1 кВт, длинная линия",
+					inputSummary = "Тип: Оба расчёта, Ввод: По мощности, Мощность: 1 кВт, Напряжение: 220 В, Тип сети: Однофазная, Длина: 100 м, Материал: Медь, Прокладка: Открытая, cosφ: 0.95, Потери: 3%, Автомат: Тип C",
+					resultSummary = "Ток: 4.8 А, Сечение: 4 мм² (медь), Автомат: 10 А (тип C), Потери: 2.9%"
 				)
 			)
 		)

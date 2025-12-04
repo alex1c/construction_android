@@ -13,6 +13,7 @@ package com.construction.domain.model
  * @param minValue Optional minimum allowed value
  * @param maxValue Optional maximum allowed value
  * @param step Optional step value for increment/decrement controls
+ * @param options Optional list of options for dropdown (value to display text mapping)
  */
 data class InputFieldDefinition(
 	val id: String,
@@ -23,7 +24,8 @@ data class InputFieldDefinition(
 	val defaultValue: Double? = null,
 	val minValue: Double? = null,
 	val maxValue: Double? = null,
-	val step: Double? = null
+	val step: Double? = null,
+	val options: List<Pair<Double, String>>? = null
 )
 
 
