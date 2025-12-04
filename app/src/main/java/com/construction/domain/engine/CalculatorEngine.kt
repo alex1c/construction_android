@@ -761,29 +761,23 @@ object CalculatorEngine {
 		val gravelDensity = inputs["gravel_density"] ?: 1400.0
 		val wastePercent = inputs["waste_percent"] ?: 10.0
 		
-		// Calculate area based on input method
-		val calculatedArea = when (inputMethod.toInt()) {
+		// Calculate volume based on input method (consolidated logic)
+		val gravelVolume = when (inputMethod.toInt()) {
 			1 -> { // Length × Width
 				if (length <= 0 || width <= 0) throw ArithmeticException("Length and width must be positive")
-				length * width
+				if (layerThickness <= 0) throw ArithmeticException("Layer thickness must be positive")
+				length * width * layerThickness
 			}
 			2 -> { // Area
 				if (area <= 0) throw ArithmeticException("Area must be positive")
-				area
+				if (layerThickness <= 0) throw ArithmeticException("Layer thickness must be positive")
+				area * layerThickness
 			}
-			else -> throw ArithmeticException("Invalid input method")
-		}
-		
-		// Calculate volume
-		val gravelVolume = when (inputMethod.toInt()) {
 			3 -> { // Volume directly
 				if (volume <= 0) throw ArithmeticException("Volume must be positive")
 				volume
 			}
-			else -> {
-				if (layerThickness <= 0) throw ArithmeticException("Layer thickness must be positive")
-				calculatedArea * layerThickness
-			}
+			else -> throw ArithmeticException("Invalid input method. Must be 1 (Length × Width), 2 (Area), or 3 (Volume)")
 		}
 		
 		// Calculate mass
@@ -818,7 +812,7 @@ object CalculatorEngine {
 		val roomHeight = inputs["room_height"] ?: 2.7
 		val roomType = inputs["room_type"] ?: 1.0
 		val peopleCount = inputs["people_count"] ?: 1.0
-		val airExchangeRate = inputs["air_exchange_rate"]
+		val optionalAirExchangeRate = inputs["air_exchange_rate"] // Optional input
 		
 		if (roomLength <= 0 || roomWidth <= 0 || roomHeight <= 0) {
 			throw ArithmeticException("Room dimensions must be positive")
@@ -842,7 +836,15 @@ object CalculatorEngine {
 		}
 		
 		// Use provided air exchange rate or default based on room type
-		val effectiveAirExchangeRate = airExchangeRate ?: defaultAirExchangeRate
+		// Validate that if provided, it must be positive
+		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null) {
+			if (optionalAirExchangeRate <= 0) {
+				throw ArithmeticException("Air exchange rate must be positive if provided")
+			}
+			optionalAirExchangeRate
+		} else {
+			defaultAirExchangeRate
+		}
 		
 		// Calculate room volume
 		val roomVolume = roomLength * roomWidth * roomHeight
