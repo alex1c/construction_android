@@ -30,7 +30,10 @@ enum class InputFieldType {
 	FLOW,
 	
 	/** Percentage value (0-100) */
-	PERCENT
+	PERCENT,
+	
+	/** Dropdown selection field */
+	DROPDOWN
 }
 
 

@@ -5,9 +5,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.construction.domain.model.CalculatorDefinition
+import com.construction.ui.util.CalculatorIcons
 
 /**
  * Reusable component for displaying a list of calculators.
@@ -36,7 +39,7 @@ fun CalculatorList(
 }
 
 /**
- * Item displaying a single calculator.
+ * Item displaying a single calculator with icon.
  *
  * @param calculator Calculator to display
  * @param onClick Callback when the calculator is tapped
@@ -55,21 +58,37 @@ fun CalculatorItem(
 			containerColor = MaterialTheme.colorScheme.surface
 		)
 	) {
-		Column(
+		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(16.dp)
+				.padding(16.dp),
+			verticalAlignment = Alignment.CenterVertically
 		) {
-			Text(
-				text = calculator.name,
-				style = MaterialTheme.typography.titleMedium
+			// Calculator icon
+			Icon(
+				imageVector = CalculatorIcons.getIcon(calculator.id),
+				contentDescription = calculator.name,
+				modifier = Modifier.size(48.dp),
+				tint = Color(CalculatorIcons.getCategoryColor(calculator.categoryId))
 			)
-			Spacer(modifier = Modifier.height(4.dp))
-			Text(
-				text = calculator.shortDescription,
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
+			
+			Spacer(modifier = Modifier.width(16.dp))
+			
+			// Calculator info
+			Column(
+				modifier = Modifier.weight(1f)
+			) {
+				Text(
+					text = calculator.name,
+					style = MaterialTheme.typography.titleMedium
+				)
+				Spacer(modifier = Modifier.height(4.dp))
+				Text(
+					text = calculator.shortDescription,
+					style = MaterialTheme.typography.bodyMedium,
+					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
+			}
 		}
 	}
 }

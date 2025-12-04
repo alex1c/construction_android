@@ -23,8 +23,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.construction.R
+import com.construction.config.AppConfig
 import com.construction.domain.model.InputFieldDefinition
 import com.construction.ui.calculator.buildShareText
+import com.construction.ui.util.CalculatorIcons
 import com.construction.util.ShareHelper
 
 /**
@@ -108,12 +110,31 @@ fun CalculatorScreen(
 					.padding(16.dp),
 				verticalArrangement = Arrangement.spacedBy(16.dp)
 			) {
-				// Description
-				Text(
-					text = currentCalculator.shortDescription,
-					style = MaterialTheme.typography.bodyLarge,
-					color = MaterialTheme.colorScheme.onSurfaceVariant
-				)
+				// Calculator icon and name header
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.spacedBy(12.dp)
+				) {
+					Icon(
+						imageVector = CalculatorIcons.getIcon(currentCalculator.id),
+						contentDescription = currentCalculator.name,
+						modifier = Modifier.size(48.dp),
+						tint = Color(CalculatorIcons.getCategoryColor(currentCalculator.categoryId))
+					)
+					Column(modifier = Modifier.weight(1f)) {
+						Text(
+							text = currentCalculator.name,
+							style = MaterialTheme.typography.headlineSmall,
+							fontWeight = FontWeight.Bold
+						)
+						Text(
+							text = currentCalculator.shortDescription,
+							style = MaterialTheme.typography.bodyLarge,
+							color = MaterialTheme.colorScheme.onSurfaceVariant
+						)
+					}
+				}
 				
 				// Help text (if available)
 				currentCalculator.helpText?.let { helpText ->
@@ -192,34 +213,41 @@ fun CalculatorScreen(
 					
 					currentCalculator.resultFields.forEach { field ->
 						// Special handling for calculation_details field
+						// TODO: Enable after Premium feature launch
+						// Detailed calculation descriptions are hidden behind premium flag
 						if (field.id == "calculation_details") {
-							val calculationDetails by viewModel.calculationDetails.collectAsState()
-							calculationDetails?.let { details ->
-								Card(
-									modifier = Modifier.fillMaxWidth(),
-									colors = CardDefaults.cardColors(
-										containerColor = MaterialTheme.colorScheme.surfaceVariant
-									)
-								) {
-									Column(
-										modifier = Modifier
-											.fillMaxWidth()
-											.padding(16.dp),
-										verticalArrangement = Arrangement.spacedBy(8.dp)
+							// Only show detailed descriptions when premium is enabled
+							if (AppConfig.premiumEnabled) {
+								val calculationDetails by viewModel.calculationDetails.collectAsState()
+								calculationDetails?.let { details ->
+									Card(
+										modifier = Modifier.fillMaxWidth(),
+										colors = CardDefaults.cardColors(
+											containerColor = MaterialTheme.colorScheme.surfaceVariant
+										)
 									) {
-										Text(
-											text = field.label,
-											style = MaterialTheme.typography.titleMedium,
-											fontWeight = FontWeight.Bold
-										)
-										Text(
-											text = details,
-											style = MaterialTheme.typography.bodySmall,
-											color = MaterialTheme.colorScheme.onSurfaceVariant
-										)
+										Column(
+											modifier = Modifier
+												.fillMaxWidth()
+												.padding(16.dp),
+											verticalArrangement = Arrangement.spacedBy(8.dp)
+										) {
+											Text(
+												text = field.label,
+												style = MaterialTheme.typography.titleMedium,
+												fontWeight = FontWeight.Bold
+											)
+											Text(
+												text = details,
+												style = MaterialTheme.typography.bodySmall,
+												color = MaterialTheme.colorScheme.onSurfaceVariant
+											)
+										}
 									}
 								}
 							}
+							// When premium is disabled, calculation_details field is hidden
+							// All data is still calculated and stored, just not displayed
 						} else {
 							val resultValue = results[field.id]
 							if (resultValue != null) {

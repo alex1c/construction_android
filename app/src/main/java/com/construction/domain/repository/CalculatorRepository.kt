@@ -9,10 +9,37 @@ import com.construction.domain.model.UsageExample
 
 /**
  * Static in-memory repository for construction calculators.
- * Provides access to calculator categories and definitions.
+ * 
+ * This repository provides access to all calculator definitions and categories.
+ * It acts as a single source of truth for calculator metadata.
+ * 
+ * Architecture:
+ * - Uses object singleton pattern (no instance needed)
+ * - All data is defined in-memory (no database required)
+ * - Each calculator is created via factory methods (create*Calculator)
+ * 
+ * Calculator Structure:
+ * Each calculator contains:
+ * - Input fields: Definition of all required input parameters
+ * - Result fields: Definition of all calculated output values
+ * - Usage examples: Practical examples showing typical use cases
+ * - Help text: Optional detailed instructions
+ * 
+ * Data Source:
+ * All calculator definitions are based on calc1.ru website specifications.
+ * Formulas and parameters are aligned with industry standards (ГОСТ, СНиП).
+ * 
+ * Future Enhancements:
+ * - Could be migrated to database for dynamic updates
+ * - Could support remote configuration
+ * - Could support user-defined calculators
  */
 object CalculatorRepository {
 	
+	/**
+	 * Category identifiers for organizing calculators.
+	 * Categories are used for navigation and filtering.
+	 */
 	// Category IDs
 	private const val CATEGORY_FINISHING = "finishing_interior"
 	private const val CATEGORY_STRUCTURES = "structures_concrete"
@@ -21,6 +48,14 @@ object CalculatorRepository {
 	
 	/**
 	 * Returns all available calculator categories.
+	 * 
+	 * Categories are used to organize calculators into logical groups:
+	 * - Finishing & Interior: Materials for interior decoration
+	 * - Structures & Concrete: Structural elements and concrete work
+	 * - Engineering Systems: HVAC, plumbing, electrical systems
+	 * - Metal & Electricity: Metal structures and electrical calculations
+	 * 
+	 * @return List of all calculator categories with descriptions
 	 */
 	fun getCategories(): List<CalculatorCategory> {
 		return listOf(
@@ -49,42 +84,64 @@ object CalculatorRepository {
 	
 	/**
 	 * Returns all available calculators.
+	 * 
+	 * This method creates and returns all 21 calculators in the application.
+	 * Each calculator is created via a dedicated factory method that defines:
+	 * - Input fields with types, units, hints, and default values
+	 * - Result fields with labels and units
+	 * - Usage examples for common scenarios
+	 * - Optional help text
+	 * 
+	 * Calculator Organization:
+	 * - Finishing & Interior: 9 calculators (wallpaper, paint, tile, etc.)
+	 * - Structures & Concrete: 6 calculators (foundation, concrete, roof, etc.)
+	 * - Engineering Systems: 3 calculators (ventilation, heated floor, pipes)
+	 * - Metal & Electricity: 3 calculators (rebar, cable, electrical)
+	 * 
+	 * Total: 21 calculators
+	 * 
+	 * @return List of all calculator definitions
 	 */
 	fun getCalculators(): List<CalculatorDefinition> {
 		return listOf(
 			// Finishing & Interior (9 calculators)
-			createWallpaperCalculator(),
-			createPaintCalculator(),
-			createTileAdhesiveCalculator(),
-			createPuttyCalculator(),
-			createPrimerCalculator(),
-			createPlasterCalculator(),
-			createWallAreaCalculator(),
-			createTileCalculator(),
-			createLaminateCalculator(),
+			createWallpaperCalculator(),      // Расчёт количества обоев
+			createPaintCalculator(),          // Расчёт количества краски
+			createTileAdhesiveCalculator(),  // Расчёт плиточного клея
+			createPuttyCalculator(),         // Расчёт шпатлёвки
+			createPrimerCalculator(),        // Расчёт грунтовки
+			createPlasterCalculator(),       // Расчёт штукатурки
+			createWallAreaCalculator(),      // Расчёт площади стен
+			createTileCalculator(),          // Расчёт количества плитки
+			createLaminateCalculator(),      // Расчёт ламината
 			
 			// Structures & Concrete (6 calculators)
-			createFoundationCalculator(),
-			createConcreteCalculator(),
-			createRoofCalculator(),
-			createBrickBlocksCalculator(),
-			createStairsCalculator(),
-			createGravelCalculator(),
+			createFoundationCalculator(),    // Расчёт материалов для фундамента
+			createConcreteCalculator(),      // Расчёт состава бетона
+			createRoofCalculator(),          // Расчёт кровли
+			createBrickBlocksCalculator(),  // Расчёт кирпича и блоков
+			createStairsCalculator(),        // Расчёт лестниц
+			createGravelCalculator(),        // Расчёт щебня
 			
 			// Engineering Systems (3 calculators)
-			createVentilationCalculator(),
-			createHeatedFloorCalculator(),
-			createWaterPipesCalculator(),
+			createVentilationCalculator(),   // Расчёт вентиляции
+			createHeatedFloorCalculator(),   // Расчёт тёплого пола
+			createWaterPipesCalculator(),    // Расчёт водопроводных труб
 			
 			// Metal & Electricity (3 calculators)
-			createRebarCalculator(),
-			createCableSectionCalculator(),
-			createElectricalCalculator()
+			createRebarCalculator(),         // Расчёт арматуры
+			createCableSectionCalculator(),  // Расчёт сечения кабеля
+			createElectricalCalculator()     // Расчёт электрики
 		)
 	}
 	
 	/**
 	 * Returns all calculators belonging to the specified category.
+	 * 
+	 * Used for filtering calculators by category on CategoryScreen.
+	 * 
+	 * @param categoryId ID of the category (e.g., "finishing_interior")
+	 * @return List of calculators in the specified category
 	 */
 	fun getCalculatorsByCategory(categoryId: String): List<CalculatorDefinition> {
 		return getCalculators().filter { it.categoryId == categoryId }
@@ -92,6 +149,11 @@ object CalculatorRepository {
 	
 	/**
 	 * Returns a calculator by its unique ID, or null if not found.
+	 * 
+	 * Used to load calculator definition when navigating to CalculatorScreen.
+	 * 
+	 * @param id Unique calculator ID (e.g., "wallpaper", "concrete", "foundation")
+	 * @return Calculator definition if found, null otherwise
 	 */
 	fun getCalculatorById(id: String): CalculatorDefinition? {
 		return getCalculators().firstOrNull { it.id == id }
@@ -165,6 +227,11 @@ object CalculatorRepository {
 					id = "rolls_count",
 					label = "Количество рулонов",
 					unit = "шт"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -252,6 +319,11 @@ object CalculatorRepository {
 					id = "paint_volume",
 					label = "Количество краски",
 					unit = "л"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -333,6 +405,11 @@ object CalculatorRepository {
 					id = "adhesive_mass",
 					label = "Количество клея",
 					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -398,6 +475,11 @@ object CalculatorRepository {
 					id = "putty_mass",
 					label = "Количество шпатлёвки",
 					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -463,6 +545,11 @@ object CalculatorRepository {
 					id = "primer_volume",
 					label = "Количество грунтовки",
 					unit = "л"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -528,6 +615,11 @@ object CalculatorRepository {
 					id = "plaster_mass",
 					label = "Количество штукатурки",
 					unit = "кг"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -604,6 +696,11 @@ object CalculatorRepository {
 					id = "area_with_waste",
 					label = "Площадь с запасом",
 					unit = "м²"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -675,6 +772,11 @@ object CalculatorRepository {
 					id = "tile_count",
 					label = "Количество плитки",
 					unit = "шт"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -760,6 +862,11 @@ object CalculatorRepository {
 					id = "total_area",
 					label = "Общая площадь",
 					unit = "м²"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1051,6 +1158,11 @@ object CalculatorRepository {
 					id = "water_volume",
 					label = "Вода",
 					unit = "л"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(
@@ -1191,6 +1303,11 @@ object CalculatorRepository {
 					id = "sheets_count",
 					label = "Количество листов",
 					unit = "шт"
+				),
+				ResultFieldDefinition(
+					id = "calculation_details",
+					label = "Подробности расчёта",
+					unit = null
 				)
 			),
 			usageExamples = listOf(

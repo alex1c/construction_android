@@ -6,7 +6,41 @@ import com.construction.domain.model.CalculatorDefinition
 
 /**
  * Helper function to build share text for calculation results.
- * Creates a human-readable text containing calculator name, inputs, results, and footer.
+ * 
+ * Creates a human-readable, formatted text string containing:
+ * - Calculator name
+ * - Input parameters with labels and units
+ * - Calculation results with labels and units
+ * - Footer with app attribution
+ * 
+ * The generated text is suitable for sharing via:
+ * - Messengers (Telegram, WhatsApp, etc.)
+ * - Email
+ * - Social networks
+ * - Clipboard
+ * - Any app that supports text sharing
+ * 
+ * Format Example:
+ * ```
+ * Калькулятор обоев
+ * 
+ * Параметры:
+ * • Длина комнаты: 4.0 м
+ * • Ширина комнаты: 3.0 м
+ * • Высота стен: 2.7 м
+ * ...
+ * 
+ * Результаты:
+ * • Количество рулонов: 8.00 шт
+ * 
+ * Расчёт выполнен в приложении "Строительные калькуляторы Calc1".
+ * ```
+ * 
+ * @param calculator Calculator definition (for field labels and structure)
+ * @param inputValues Map of input field IDs to their string values
+ * @param results Map of result field IDs to their calculated numeric values
+ * @param context Android context for accessing string resources
+ * @return Formatted text string ready for sharing
  */
 fun buildShareText(
 	calculator: CalculatorDefinition,
