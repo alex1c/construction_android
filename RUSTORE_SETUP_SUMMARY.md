@@ -9,7 +9,7 @@
 
 ### 2. Настроена конфигурация проекта
 - ✅ Версия: 1.0 (Build 1)
-- ✅ Package Name: `com.construction`
+- ✅ Package Name: `ru.calc1.construction`
 - ✅ Min SDK: 24 (Android 7.0)
 - ✅ Target SDK: 34 (Android 14)
 - ✅ Debug build type настроен
@@ -119,7 +119,7 @@
 - Не забудьте отключить перед финальной публикацией или интегрировать биллинг
 
 ### URL для шаринга
-- Текущий URL: `https://apps.rustore.ru/app/com.construction`
+- Текущий URL: `https://apps.rustore.ru/app/ru.calc1.construction`
 - После публикации обновите на реальный URL в `strings.xml`
 
 ### Версионирование

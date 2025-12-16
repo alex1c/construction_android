@@ -6,7 +6,7 @@
 **Строительные калькуляторы Calc1**
 
 ### Package Name
-`com.construction`
+`ru.calc1.construction`
 
 ### Версия
 - **Version Code:** 1
@@ -158,5 +158,5 @@
 - Приложение готово к публикации
 - Премиум функции включены для тестирования (флаг `premiumEnabled = true`)
 - После интеграции RuStore Billing флаг будет управляться через биллинг систему
-- URL для шаринга приложения: `https://apps.rustore.ru/app/com.construction.calculators` (заменить на реальный после публикации)
+- URL для шаринга приложения: `https://apps.rustore.ru/app/ru.calc1.construction` (заменить на реальный после публикации)
 

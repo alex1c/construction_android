@@ -27,25 +27,25 @@
 }
 
 # Keep data classes
--keep class com.construction.domain.model.** { *; }
+-keep class ru.calc1.construction.domain.model.** { *; }
 
 # Keep CalculatorEngine
--keep class com.construction.domain.engine.CalculatorEngine { *; }
--keep class com.construction.domain.engine.** { *; }
+-keep class ru.calc1.construction.domain.engine.CalculatorEngine { *; }
+-keep class ru.calc1.construction.domain.engine.** { *; }
 
 # Keep Repository
--keep class com.construction.domain.repository.** { *; }
+-keep class ru.calc1.construction.domain.repository.** { *; }
 
 # Keep Config
--keep class com.construction.config.** { *; }
+-keep class ru.calc1.construction.config.** { *; }
 
 # Keep Navigation
--keep class com.construction.navigation.** { *; }
+-keep class ru.calc1.construction.navigation.** { *; }
 
 # Keep UI components (for Compose)
--keep class com.construction.ui.** { *; }
+-keep class ru.calc1.construction.ui.** { *; }
 
 # Keep utility classes
--keep class com.construction.util.** { *; }
+-keep class ru.calc1.construction.util.** { *; }
 
 

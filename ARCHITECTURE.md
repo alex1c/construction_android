@@ -281,7 +281,7 @@ val state by viewModel.state.collectAsState()
 - Функции: camelCase (calculateWallpaper)
 - Переменные: camelCase (roomLength)
 - Константы: UPPER_SNAKE_CASE (MAX_LENGTH)
-- Пакеты: lowercase (com.construction.domain)
+- Пакеты: lowercase (ru.calc1.construction.domain)
 
 ### Структура файлов:
 - Один класс/объект на файл

@@ -5,7 +5,7 @@
 ### Версия и идентификация
 - [x] Version Code: 1
 - [x] Version Name: 1.0
-- [x] Package Name: com.construction
+- [x] Package Name: ru.calc1.construction
 - [x] Min SDK: 24 (Android 7.0)
 - [x] Target SDK: 34 (Android 14)
 

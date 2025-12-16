@@ -10,7 +10,7 @@ versionName "1.0"
 ```
 
 ### 2. Проверка Package Name
-Package name: `com.construction`
+Package name: `ru.calc1.construction`
 
 ### 3. Подпись приложения
 Для публикации в RuStore необходимо подписать приложение.
@@ -107,7 +107,7 @@ adb install app/build/outputs/apk/release/app-release.apk
 
 1. Обновите URL в `strings.xml`:
    ```xml
-   <string name="rustore_url">https://apps.rustore.ru/app/com.construction</string>
+   <string name="rustore_url">https://apps.rustore.ru/app/ru.calc1.construction</string>
    ```
    Замените на реальный URL после публикации.
 

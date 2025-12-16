@@ -21,15 +21,15 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-	namespace 'com.construction'
+	namespace 'ru.calc1.construction'
 	compileSdk 34
 	
 	defaultConfig {
-		applicationId "com.construction"
+		applicationId "ru.calc1.construction"
 		minSdk 24
 		targetSdk 34
-		versionCode 1
-		versionName "1.0"
+		versionCode 3
+		versionName "1.0.2"
 		
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 		vectorDrawables {

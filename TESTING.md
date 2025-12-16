@@ -43,7 +43,7 @@ Run all tests:
 
 Run specific test class:
 ```bash
-./gradlew test --tests "com.construction.domain.engine.WallpaperCalculatorTest"
+./gradlew test --tests "ru.calc1.construction.domain.engine.WallpaperCalculatorTest"
 ```
 
 Run tests with coverage:
@@ -214,7 +214,7 @@ Error types:
 Create `{CalculatorName}CalculatorTest.kt` in `app/src/test/java/com/construction/domain/engine/`:
 
 ```kotlin
-package com.construction.domain.engine
+package ru.calc1.construction.domain.engine
 
 import org.junit.Assert.*
 import org.junit.Test
