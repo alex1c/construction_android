@@ -1391,11 +1391,11 @@ object CalculatorEngine {
 			}
 			2 -> {
 				// 90° turn: 2 flights + 1 landing
-				flightLength + landingDepth
+				flightsCount * flightLength + landingDepth
 			}
 			3 -> {
 				// 180° turn: 2 flights + 1 landing (usually between flights)
-				flightLength + landingDepth
+				flightsCount * flightLength + landingDepth
 			}
 			else -> flightLength
 		}
@@ -1454,8 +1454,8 @@ object CalculatorEngine {
 		// Total length depends on stairs type
 		val totalLength = when (stairsType.toInt()) {
 			1 -> flightLength
-			2 -> flightLength + landingDepth
-			3 -> flightLength + landingDepth
+			2 -> flightsCount * flightLength + landingDepth
+			3 -> flightsCount * flightLength + landingDepth
 			else -> flightLength
 		}
 		
@@ -1795,6 +1795,11 @@ object CalculatorEngine {
 			throw ArithmeticException("People count must be non-negative")
 		}
 		
+		// Validate air exchange rate if provided
+		if (optionalAirExchangeRate != null && optionalAirExchangeRate <= 0) {
+			throw ArithmeticException("Air exchange rate must be positive when provided")
+		}
+		
 		// Get air exchange rate and air norm per person based on room type
 		val (defaultAirExchangeRate, airNormPerPerson) = when (roomType.toInt()) {
 			1 -> Pair(1.0, 30.0) // Жилая комната
@@ -1810,12 +1815,8 @@ object CalculatorEngine {
 		}
 		
 		// Use provided air exchange rate or default based on room type
-		// If air_exchange_rate is null or 0, use recommended value for room type
-		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null && optionalAirExchangeRate > 0) {
-			optionalAirExchangeRate
-		} else {
-			defaultAirExchangeRate
-		}
+		// If air_exchange_rate is null, use recommended value for room type
+		val effectiveAirExchangeRate = optionalAirExchangeRate ?: defaultAirExchangeRate
 		
 		// Calculate room volume
 		val roomVolume = roomLength * roomWidth * roomHeight
@@ -1849,6 +1850,11 @@ object CalculatorEngine {
 		val peopleCount = inputs["people_count"] ?: 1.0
 		val optionalAirExchangeRate = inputs["air_exchange_rate"]
 		
+		// Validate air exchange rate if provided
+		if (optionalAirExchangeRate != null && optionalAirExchangeRate <= 0) {
+			throw ArithmeticException("Air exchange rate must be positive when provided")
+		}
+		
 		// Get air exchange rate and air norm per person based on room type
 		val (defaultAirExchangeRate, airNormPerPerson) = when (roomType.toInt()) {
 			1 -> Pair(1.0, 30.0) // Жилая комната
@@ -1864,12 +1870,8 @@ object CalculatorEngine {
 		}
 		
 		// Use provided air exchange rate or default based on room type
-		// If air_exchange_rate is null or 0, use recommended value for room type
-		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null && optionalAirExchangeRate > 0) {
-			optionalAirExchangeRate
-		} else {
-			defaultAirExchangeRate
-		}
+		// If air_exchange_rate is null, use recommended value for room type
+		val effectiveAirExchangeRate = optionalAirExchangeRate ?: defaultAirExchangeRate
 		
 		// Calculate room volume
 		val roomVolume = roomLength * roomWidth * roomHeight
