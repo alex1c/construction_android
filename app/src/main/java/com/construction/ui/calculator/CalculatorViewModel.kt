@@ -60,7 +60,7 @@ class CalculatorViewModel(calculatorId: String) : ViewModel() {
 	/**
 	 * Detailed calculation description (premium feature).
 	 * Contains step-by-step explanation of calculations with formulas.
-	 * Always calculated and stored, but only displayed when AppConfig.premiumEnabled == true.
+	 * Always calculated and stored, but only displayed when premium is enabled (currently always true for testing).
 	 * 
 	 * TODO: Enable after Premium feature launch
 	 */
@@ -198,7 +198,7 @@ class CalculatorViewModel(calculatorId: String) : ViewModel() {
 				_results.value = calculatedResults
 				// Get calculation details if available
 				// TODO: Enable after Premium feature launch
-				// Note: Details are always calculated and stored, but only displayed when AppConfig.premiumEnabled == true
+				// Note: Details are always calculated and stored, but only displayed when premium is enabled (currently always true for testing)
 				// This ensures data is ready when premium feature is enabled
 				_calculationDetails.value = CalculatorEngine.getCalculationDetails(calculator.id, numericInputs)
 				_error.value = null

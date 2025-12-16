@@ -293,3 +293,5 @@ val state by viewModel.state.collectAsState()
 - Inline комментарии для сложной логики
 - TODO для будущих улучшений
 
+
+

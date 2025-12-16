@@ -129,3 +129,5 @@ adb install app/build/outputs/apk/release/app-release.apk
 - Проверьте зависимости
 - Используйте AAB вместо APK
 
+
+

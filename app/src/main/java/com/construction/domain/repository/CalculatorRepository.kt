@@ -1,5 +1,6 @@
 package com.construction.domain.repository
 
+import com.construction.domain.model.AccessLevel
 import com.construction.domain.model.CalculatorCategory
 import com.construction.domain.model.CalculatorDefinition
 import com.construction.domain.model.InputFieldDefinition
@@ -50,34 +51,44 @@ object CalculatorRepository {
 	 * Returns all available calculator categories.
 	 * 
 	 * Categories are used to organize calculators into logical groups:
-	 * - Finishing & Interior: Materials for interior decoration
-	 * - Structures & Concrete: Structural elements and concrete work
-	 * - Engineering Systems: HVAC, plumbing, electrical systems
-	 * - Metal & Electricity: Metal structures and electrical calculations
+	 * - Finishing & Interior: Materials for interior decoration (FREE)
+	 * - Structures & Concrete: Structural elements and concrete work (PREMIUM)
+	 * - Engineering Systems: HVAC, plumbing, electrical systems (PREMIUM)
+	 * - Metal & Electricity: Metal structures and electrical calculations (PREMIUM)
 	 * 
-	 * @return List of all calculator categories with descriptions
+	 * Access Control:
+	 * - "Отделка и интерьер" is always FREE
+	 * - All other categories are PREMIUM-only
+	 * 
+	 * TODO: Enable Premium gating after RuStore billing launch
+	 * 
+	 * @return List of all calculator categories with descriptions and access levels
 	 */
 	fun getCategories(): List<CalculatorCategory> {
 		return listOf(
 			CalculatorCategory(
 				id = CATEGORY_FINISHING,
 				name = "Отделка и интерьер",
-				description = "Калькуляторы для расчёта материалов для внутренней отделки помещений"
+				description = "Калькуляторы для расчёта материалов для внутренней отделки помещений",
+				accessLevel = AccessLevel.FREE // Always free
 			),
 			CalculatorCategory(
 				id = CATEGORY_STRUCTURES,
 				name = "Конструкции и бетон",
-				description = "Калькуляторы для расчёта материалов для строительных конструкций и бетонных работ"
+				description = "Калькуляторы для расчёта материалов для строительных конструкций и бетонных работ",
+				accessLevel = AccessLevel.PREMIUM
 			),
 			CalculatorCategory(
 				id = CATEGORY_ENGINEERING,
 				name = "Инженерные системы",
-				description = "Калькуляторы для расчёта параметров инженерных систем"
+				description = "Калькуляторы для расчёта параметров инженерных систем",
+				accessLevel = AccessLevel.PREMIUM
 			),
 			CalculatorCategory(
 				id = CATEGORY_METAL_ELECTRICITY,
 				name = "Металл и электрика",
-				description = "Калькуляторы для расчёта металлических конструкций и электрических систем"
+				description = "Калькуляторы для расчёта металлических конструкций и электрических систем",
+				accessLevel = AccessLevel.PREMIUM
 			)
 		)
 	}
@@ -1554,8 +1565,28 @@ object CalculatorRepository {
 					unit = "шт"
 				),
 				ResultFieldDefinition(
+					id = "flights_count",
+					label = "Количество пролётов",
+					unit = "шт"
+				),
+				ResultFieldDefinition(
+					id = "steps_per_flight",
+					label = "Ступеней в пролёте",
+					unit = "шт"
+				),
+				ResultFieldDefinition(
 					id = "flight_length",
-					label = "Длина пролёта",
+					label = "Длина одного пролёта",
+					unit = "мм"
+				),
+				ResultFieldDefinition(
+					id = "total_length",
+					label = "Общая длина лестницы",
+					unit = "мм"
+				),
+				ResultFieldDefinition(
+					id = "landing_depth",
+					label = "Глубина площадки",
 					unit = "мм"
 				),
 				ResultFieldDefinition(
@@ -1833,9 +1864,20 @@ object CalculatorRepository {
 					id = "room_type",
 					label = "Тип помещения",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Жилая комната, 2 - Кухня, 3 - Ванная/туалет, 4 - Офис, 5 - Ресторан/кафе, 6 - Спортзал, 7 - Учебный класс, 8 - Склад, 9 - Производство"
+					hint = "Выберите тип помещения (кратность воздухообмена установится автоматически)",
+					options = listOf(
+						Pair(1.0, "Жилая комната - 1 раз/ч"),
+						Pair(2.0, "Кухня - 3 раз/ч"),
+						Pair(3.0, "Ванная/туалет - 3 раз/ч"),
+						Pair(4.0, "Офис - 2 раз/ч"),
+						Pair(5.0, "Ресторан/кафе - 5 раз/ч"),
+						Pair(6.0, "Спортзал - 4 раз/ч"),
+						Pair(7.0, "Учебный класс - 2 раз/ч"),
+						Pair(8.0, "Склад - 1 раз/ч"),
+						Pair(9.0, "Производство - 3 раз/ч")
+					)
 				),
 				InputFieldDefinition(
 					id = "people_count",
@@ -1850,7 +1892,7 @@ object CalculatorRepository {
 					label = "Кратность воздухообмена",
 					unit = "раз/ч",
 					type = InputFieldType.NUMBER,
-					hint = "Кратность воздухообмена (опционально, автоматически определяется по типу помещения)"
+					hint = "Кратность воздухообмена (рекомендуемое значение устанавливается автоматически по типу помещения, можно изменить вручную)"
 				)
 			),
 			resultFields = listOf(
@@ -2076,9 +2118,14 @@ object CalculatorRepository {
 					id = "calculation_type",
 					label = "Тип расчёта",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - По диаметру, 2 - По расходу, 3 - По давлению"
+					hint = "Выберите тип расчёта",
+					options = listOf(
+						Pair(1.0, "По диаметру - расчёт расхода и скорости"),
+						Pair(2.0, "По расходу - расчёт диаметра и скорости"),
+						Pair(3.0, "По давлению - расчёт потерь давления")
+					)
 				),
 				InputFieldDefinition(
 					id = "pipe_diameter",
@@ -2106,9 +2153,15 @@ object CalculatorRepository {
 					id = "pipe_material",
 					label = "Материал трубы",
 					unit = null,
-					type = InputFieldType.INTEGER,
+					type = InputFieldType.DROPDOWN,
 					defaultValue = 1.0,
-					hint = "1 - Сталь, 2 - Медь, 3 - Пластик, 4 - Чугун"
+					hint = "Выберите материал трубы",
+					options = listOf(
+						Pair(1.0, "Сталь - шероховатость 0.045 мм"),
+						Pair(2.0, "Медь - шероховатость 0.0015 мм"),
+						Pair(3.0, "Пластик - шероховатость 0.0015 мм"),
+						Pair(4.0, "Чугун - шероховатость 0.1 мм")
+					)
 				),
 				InputFieldDefinition(
 					id = "pipe_length",

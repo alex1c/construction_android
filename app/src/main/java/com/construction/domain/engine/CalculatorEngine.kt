@@ -66,7 +66,138 @@ object CalculatorEngine {
 			)
 		
 		// Build validation maps
-		val requiredFields = calculator.inputFields.map { it.id }
+		// For calculators with conditional required fields, determine based on calculation type
+		val requiredFields = when (calculatorId) {
+			"gravel" -> {
+				val inputMethod = inputs["input_method"] ?: 1.0
+				// Always required fields for gravel calculator
+				val baseRequired = listOf("work_type", "input_method", "fraction_type")
+				// Add conditional fields based on input_method
+				when (inputMethod.toInt()) {
+					1 -> {
+						// Length × Width: require length, width, layer_thickness
+						baseRequired + listOf("length", "width", "layer_thickness")
+					}
+					2 -> {
+						// Area: require area, layer_thickness
+						baseRequired + listOf("area", "layer_thickness")
+					}
+					3 -> {
+						// Volume: require volume only (layer_thickness not needed for direct volume)
+						baseRequired + listOf("volume")
+					}
+					else -> {
+						// Default: require all fields
+						calculator.inputFields.map { it.id }
+					}
+				}
+			}
+			"water_pipes" -> {
+				val calculationType = inputs["calculation_type"] ?: 1.0
+				// Always required fields for water pipes calculator
+				val baseRequired = listOf("calculation_type", "pipe_material", "flow_velocity")
+				// Add conditional fields based on calculation_type
+				when (calculationType.toInt()) {
+					1 -> {
+						// По диаметру: require pipe_diameter, flow_velocity
+						baseRequired + listOf("pipe_diameter")
+					}
+					2 -> {
+						// По расходу: require water_flow, flow_velocity
+						baseRequired + listOf("water_flow")
+					}
+					3 -> {
+						// По давлению: require pipe_diameter, water_flow
+						baseRequired + listOf("pipe_diameter", "water_flow")
+					}
+					else -> {
+						// Default: require all fields
+						calculator.inputFields.map { it.id }
+					}
+				}
+			}
+			"cable_section" -> {
+				val calculationType = inputs["calculation_type"] ?: 1.0
+				// Always required fields for cable section calculator
+				// Fields with defaultValue are not required: voltage (220.0), power_factor (0.8), 
+				// voltage_drop_percent (3.0), ambient_temperature (25.0), installation_type (1.0)
+				val baseRequired = listOf(
+					"calculation_type",
+					"cable_length",
+					"conductor_material",
+					"network_type"
+				)
+				// Add conditional fields based on calculation_type
+				when (calculationType.toInt()) {
+					1 -> {
+						// По мощности: require power (current not needed)
+						// power_factor is optional (has defaultValue 0.8)
+						baseRequired + listOf("power")
+					}
+					2 -> {
+						// По току: require current (power not needed)
+						baseRequired + listOf("current")
+					}
+					else -> {
+						// Default: require all fields
+						calculator.inputFields.map { it.id }
+					}
+				}
+			}
+			"electrical" -> {
+				val calculationType = inputs["calculation_type"] ?: 3.0
+				val inputMethod = inputs["input_method"] ?: 1.0
+				// Always required fields for electrical calculator
+				// Fields with defaultValue are not required: voltage (220.0), network_type (1.0),
+				// cable_length (15.0), conductor_material (1.0), installation_type (1.0),
+				// power_factor (0.9), voltage_drop_percent (3.0), breaker_type (1.0)
+				val baseRequired = listOf("calculation_type", "input_method")
+				// Add conditional fields based on input_method
+				val inputRequired = when (inputMethod.toInt()) {
+					1 -> {
+						// По мощности: require power (current not needed)
+						// power has defaultValue 2.5, but is needed for calculation when input_method = 1
+						listOf("power")
+					}
+					2 -> {
+						// По току: require current (power not needed)
+						listOf("current")
+					}
+					else -> {
+						// Default: require both
+						listOf("power", "current")
+					}
+				}
+				// Add conditional fields based on calculation_type
+				// For cable section calculation, fields with defaultValue are still needed
+				// but they will use default values if not provided
+				when (calculationType.toInt()) {
+					1 -> {
+						// Сечение кабеля: cable_length, conductor_material, installation_type needed
+						// but have defaultValue, so not strictly required
+						baseRequired + inputRequired
+					}
+					2 -> {
+						// Автомат: cable_length, conductor_material, installation_type not needed
+						baseRequired + inputRequired
+					}
+					3 -> {
+						// Оба расчёта: cable_length, conductor_material, installation_type needed
+						// but have defaultValue, so not strictly required
+						baseRequired + inputRequired
+					}
+					else -> {
+						// Default: require all fields
+						calculator.inputFields.map { it.id }
+					}
+				}
+			}
+			else -> {
+				// For other calculators, all fields are required
+				calculator.inputFields.map { it.id }
+			}
+		}
+		
 		val fieldTypes = calculator.inputFields.associate { it.id to it.type }
 		val allowZero = calculator.inputFields.associate { 
 			it.id to (it.defaultValue == 0.0 || it.id.contains("openings") || it.id.contains("waste"))
@@ -430,11 +561,69 @@ object CalculatorEngine {
 		val concreteVolumeWithWaste = concreteVolume * (1 + wastePercent / 100.0)
 		
 		// Calculate cement, sand, and gravel based on concrete grade
+		// Using same calculation method as concrete calculator: ratios × density / sum of ratios
+		// Densities: cement = 1400 kg/m³, sand = 1600 kg/m³, gravel = 1400 kg/m³
 		val (cementPerM3, sandPerM3, gravelPerM3) = when (concreteGrade.toInt()) {
-			200 -> Triple(280.0, 730.0, 1250.0)
-			250 -> Triple(330.0, 720.0, 1250.0)
-			300 -> Triple(380.0, 700.0, 1250.0)
-			else -> Triple(280.0, 730.0, 1250.0) // Default to M200
+			200 -> {
+				// M200: 1:2.5:4.5 ratio
+				val cementRatio = 1.0
+				val sandRatio = 2.5
+				val gravelRatio = 4.5
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,  // ~175 kg/m³
+					sandDensity * sandRatio / totalRatio,      // ~500 kg/m³
+					gravelDensity * gravelRatio / totalRatio    // ~787.5 kg/m³
+				)
+			}
+			250 -> {
+				// M250: 1:2:4 ratio
+				val cementRatio = 1.0
+				val sandRatio = 2.0
+				val gravelRatio = 4.0
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,  // ~200 kg/m³
+					sandDensity * sandRatio / totalRatio,      // ~457 kg/m³
+					gravelDensity * gravelRatio / totalRatio   // ~800 kg/m³
+				)
+			}
+			300 -> {
+				// M300: 1:1.5:3 ratio
+				val cementRatio = 1.0
+				val sandRatio = 1.5
+				val gravelRatio = 3.0
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,  // ~255 kg/m³
+					sandDensity * sandRatio / totalRatio,      // ~436 kg/m³
+					gravelDensity * gravelRatio / totalRatio   // ~763 kg/m³
+				)
+			}
+			else -> {
+				// Default to M200
+				val cementRatio = 1.0
+				val sandRatio = 2.5
+				val gravelRatio = 4.5
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,
+					sandDensity * sandRatio / totalRatio,
+					gravelDensity * gravelRatio / totalRatio
+				)
+			}
 		}
 		
 		val cementMass = concreteVolumeWithWaste * cementPerM3
@@ -559,12 +748,68 @@ object CalculatorEngine {
 		}
 		val concreteVolumeWithWaste = concreteVolume * (1 + wastePercent / 100.0)
 		
-		// Get component ratios
+		// Get component ratios using same calculation method as concrete calculator
 		val (cementPerM3, sandPerM3, gravelPerM3) = when (concreteGrade.toInt()) {
-			200 -> Triple(280.0, 730.0, 1250.0)
-			250 -> Triple(330.0, 720.0, 1250.0)
-			300 -> Triple(380.0, 700.0, 1250.0)
-			else -> Triple(280.0, 730.0, 1250.0)
+			200 -> {
+				// M200: 1:2.5:4.5 ratio
+				val cementRatio = 1.0
+				val sandRatio = 2.5
+				val gravelRatio = 4.5
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,  // ~175 kg/m³
+					sandDensity * sandRatio / totalRatio,      // ~500 kg/m³
+					gravelDensity * gravelRatio / totalRatio    // ~787.5 kg/m³
+				)
+			}
+			250 -> {
+				// M250: 1:2:4 ratio
+				val cementRatio = 1.0
+				val sandRatio = 2.0
+				val gravelRatio = 4.0
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,  // ~200 kg/m³
+					sandDensity * sandRatio / totalRatio,      // ~457 kg/m³
+					gravelDensity * gravelRatio / totalRatio   // ~800 kg/m³
+				)
+			}
+			300 -> {
+				// M300: 1:1.5:3 ratio
+				val cementRatio = 1.0
+				val sandRatio = 1.5
+				val gravelRatio = 3.0
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,  // ~255 kg/m³
+					sandDensity * sandRatio / totalRatio,      // ~436 kg/m³
+					gravelDensity * gravelRatio / totalRatio   // ~763 kg/m³
+				)
+			}
+			else -> {
+				// Default to M200
+				val cementRatio = 1.0
+				val sandRatio = 2.5
+				val gravelRatio = 4.5
+				val totalRatio = cementRatio + sandRatio + gravelRatio
+				val cementDensity = 1400.0
+				val sandDensity = 1600.0
+				val gravelDensity = 1400.0
+				Triple(
+					cementDensity * cementRatio / totalRatio,
+					sandDensity * sandRatio / totalRatio,
+					gravelDensity * gravelRatio / totalRatio
+				)
+			}
 		}
 		
 		val cementMass = concreteVolumeWithWaste * cementPerM3
@@ -1115,18 +1360,59 @@ object CalculatorEngine {
 		// Calculate number of steps: n = ⌈H / h⌉ (rounded up)
 		val stepsCount = kotlin.math.ceil(totalHeight / stepHeight).coerceAtLeast(1.0)
 		
-		// Calculate flight length: L = n × b
-		val flightLength = stepsCount * stepDepth
+		// For turning stairs, divide steps between flights
+		// Standard: 90° turn = 1 landing, 180° turn = 1 landing (usually in the middle)
+		val flightsCount = when (stairsType.toInt()) {
+			1 -> 1.0 // Straight: 1 flight
+			2 -> 2.0 // 90° turn: 2 flights with 1 landing
+			3 -> 2.0 // 180° turn: 2 flights with 1 landing
+			else -> 1.0
+		}
 		
-		// Calculate angle: α = arctan(h / b)
+		// Steps per flight (for turning stairs, divide steps between flights)
+		val stepsPerFlight = if (flightsCount > 1.0) {
+			// For turning stairs, typically divide steps equally between flights
+			kotlin.math.ceil(stepsCount / flightsCount)
+		} else {
+			stepsCount
+		}
+		
+		// Calculate flight length: L = n × b (length of one flight)
+		val flightLength = stepsPerFlight * stepDepth
+		
+		// Landing depth (standard: 1000-1200 mm, use step depth as minimum)
+		val landingDepth = stepDepth.coerceAtLeast(1000.0)
+		
+		// Total length depends on stairs type
+		val totalLength = when (stairsType.toInt()) {
+			1 -> {
+				// Straight: just one flight
+				flightLength
+			}
+			2 -> {
+				// 90° turn: 2 flights + 1 landing
+				flightLength + landingDepth
+			}
+			3 -> {
+				// 180° turn: 2 flights + 1 landing (usually between flights)
+				flightLength + landingDepth
+			}
+			else -> flightLength
+		}
+		
+		// Calculate angle: α = arctan(h / b) (same for all types)
 		val angle = atan(stepHeight / stepDepth) * 180.0 / PI
 		
-		// Calculate comfort formula: 2h + b (should be 600-640 mm for comfortable stairs)
+		// Calculate comfort formula: 2h + b (same for all types)
 		val comfortFormula = 2.0 * stepHeight + stepDepth
 		
 		return mapOf(
 			"steps_count" to stepsCount,
+			"steps_per_flight" to stepsPerFlight,
+			"flights_count" to flightsCount,
 			"flight_length" to flightLength,
+			"landing_depth" to landingDepth,
+			"total_length" to totalLength,
 			"angle" to angle,
 			"comfort_formula" to comfortFormula
 		)
@@ -1145,8 +1431,33 @@ object CalculatorEngine {
 		// Calculate number of steps
 		val stepsCount = kotlin.math.ceil(totalHeight / stepHeight).coerceAtLeast(1.0)
 		
-		// Calculate flight length
-		val flightLength = stepsCount * stepDepth
+		// For turning stairs, divide steps between flights
+		val flightsCount = when (stairsType.toInt()) {
+			1 -> 1.0
+			2 -> 2.0
+			3 -> 2.0
+			else -> 1.0
+		}
+		
+		val stepsPerFlight = if (flightsCount > 1.0) {
+			kotlin.math.ceil(stepsCount / flightsCount)
+		} else {
+			stepsCount
+		}
+		
+		// Calculate flight length (length of one flight)
+		val flightLength = stepsPerFlight * stepDepth
+		
+		// Landing depth
+		val landingDepth = stepDepth.coerceAtLeast(1000.0)
+		
+		// Total length depends on stairs type
+		val totalLength = when (stairsType.toInt()) {
+			1 -> flightLength
+			2 -> flightLength + landingDepth
+			3 -> flightLength + landingDepth
+			else -> flightLength
+		}
 		
 		// Calculate angle
 		val angleRad = atan(stepHeight / stepDepth)
@@ -1175,7 +1486,11 @@ object CalculatorEngine {
 			appendLine("   Высота подступенка: ${String.format("%.0f", stepHeight)} мм")
 			appendLine()
 			appendLine("   Формула: n = ⌈H / h⌉")
-			appendLine("   Количество ступеней: ⌈${String.format("%.0f", totalHeight)} / ${String.format("%.0f", stepHeight)}⌉ = ${stepsCount.toInt()} шт")
+			appendLine("   Общее количество ступеней: ⌈${String.format("%.0f", totalHeight)} / ${String.format("%.0f", stepHeight)}⌉ = ${stepsCount.toInt()} шт")
+			if (flightsCount > 1.0) {
+				appendLine("   Количество пролётов: ${flightsCount.toInt()}")
+				appendLine("   Ступеней в одном пролёте: ${stepsPerFlight.toInt()} шт")
+			}
 			appendLine()
 			appendLine("   Фактическая высота подъёма:")
 			appendLine("   ${stepsCount.toInt()} × ${String.format("%.0f", stepHeight)} = ${String.format("%.0f", actualHeight)} мм")
@@ -1186,9 +1501,22 @@ object CalculatorEngine {
 			appendLine("2. РАСЧЁТ ДЛИНЫ ПРОЛЁТА:")
 			appendLine("   Глубина проступи: ${String.format("%.0f", stepDepth)} мм")
 			appendLine()
-			appendLine("   Формула: L = n × b")
-			appendLine("   Длина пролёта: ${stepsCount.toInt()} × ${String.format("%.0f", stepDepth)} = ${String.format("%.0f", flightLength)} мм")
-			appendLine("   Длина пролёта: ${String.format("%.2f", flightLength / 1000.0)} м")
+			if (flightsCount > 1.0) {
+				appendLine("   Длина одного пролёта:")
+				appendLine("   Формула: L = n × b")
+				appendLine("   Длина пролёта: ${stepsPerFlight.toInt()} × ${String.format("%.0f", stepDepth)} = ${String.format("%.0f", flightLength)} мм")
+				appendLine("   Длина пролёта: ${String.format("%.2f", flightLength / 1000.0)} м")
+				appendLine()
+				appendLine("   Площадка:")
+				appendLine("   Глубина площадки: ${String.format("%.0f", landingDepth)} мм (стандарт: не менее 1000 мм)")
+				appendLine()
+				appendLine("   Общая длина лестницы:")
+				appendLine("   ${flightsCount.toInt()} пролёта × ${String.format("%.2f", flightLength / 1000.0)} м + 1 площадка × ${String.format("%.2f", landingDepth / 1000.0)} м = ${String.format("%.2f", totalLength / 1000.0)} м")
+			} else {
+				appendLine("   Формула: L = n × b")
+				appendLine("   Длина пролёта: ${stepsCount.toInt()} × ${String.format("%.0f", stepDepth)} = ${String.format("%.0f", flightLength)} мм")
+				appendLine("   Длина пролёта: ${String.format("%.2f", flightLength / 1000.0)} м")
+			}
 			appendLine()
 			appendLine("3. РАСЧЁТ УГЛА НАКЛОНА:")
 			appendLine("   Высота подступенка: ${String.format("%.0f", stepHeight)} мм")
@@ -1207,14 +1535,40 @@ object CalculatorEngine {
 			}
 			appendLine()
 			appendLine("4. ФОРМУЛА УДОБНОЙ ЛЕСТНИЦЫ:")
-			appendLine("   Формула: 2h + b (должна быть 600-640 мм для комфортной лестницы)")
-			appendLine("   Расчёт: 2 × ${String.format("%.0f", stepHeight)} + ${String.format("%.0f", stepDepth)} = ${String.format("%.0f", comfortFormula)} мм")
+			appendLine("   Формула удобной лестницы (формула Блонделя): 2h + b")
+			appendLine()
+			appendLine("   Где:")
+			appendLine("   • h = высота подступенка (вертикальная часть ступени)")
+			appendLine("   • b = глубина проступи (горизонтальная часть ступени)")
+			appendLine()
+			appendLine("   Эта формула основана на среднем шаге человека (около 60-64 см)")
+			appendLine("   и обеспечивает комфортное движение по лестнице.")
+			appendLine()
+			appendLine("   Расчёт для вашей лестницы:")
+			appendLine("   2h + b = 2 × ${String.format("%.0f", stepHeight)} + ${String.format("%.0f", stepDepth)} = ${String.format("%.0f", comfortFormula)} мм")
 			appendLine()
 			when {
-				comfortFormula < 600 -> appendLine("   Оценка: Менее комфортно (формула < 600 мм)")
-				comfortFormula <= 640 -> appendLine("   Оценка: Оптимально (формула 600-640 мм)")
-				else -> appendLine("   Оценка: Более комфортно, но занимает больше места (формула > 640 мм)")
+				comfortFormula < 600 -> {
+					appendLine("   Оценка: Менее комфортно (формула < 600 мм)")
+					appendLine("   Лестница будет неудобной для подъёма, шаг слишком короткий.")
+					appendLine("   Рекомендуется увеличить высоту подступенка или глубину проступи.")
+				}
+				comfortFormula <= 640 -> {
+					appendLine("   Оценка: Оптимально (формула 600-640 мм)")
+					appendLine("   Лестница соответствует стандартам комфорта и безопасности.")
+					appendLine("   Движение по такой лестнице будет естественным и удобным.")
+				}
+				else -> {
+					appendLine("   Оценка: Более комфортно, но занимает больше места (формула > 640 мм)")
+					appendLine("   Лестница очень удобна, но требует больше пространства.")
+					appendLine("   Подходит для общественных зданий и помещений с достаточной площадью.")
+				}
 			}
+			appendLine()
+			appendLine("   Оптимальный диапазон: 600-640 мм")
+			appendLine("   • 600 мм - минимальное комфортное значение")
+			appendLine("   • 620-630 мм - оптимальное значение для жилых помещений")
+			appendLine("   • 640 мм - максимальное комфортное значение")
 			appendLine()
 			appendLine("5. РЕКОМЕНДАЦИИ:")
 			appendLine("   • Высота подступенка: оптимально 150-200 мм")
@@ -1456,11 +1810,8 @@ object CalculatorEngine {
 		}
 		
 		// Use provided air exchange rate or default based on room type
-		// Validate that if provided, it must be positive
-		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null) {
-			if (optionalAirExchangeRate <= 0) {
-				throw ArithmeticException("Air exchange rate must be positive if provided")
-			}
+		// If air_exchange_rate is null or 0, use recommended value for room type
+		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null && optionalAirExchangeRate > 0) {
 			optionalAirExchangeRate
 		} else {
 			defaultAirExchangeRate
@@ -1513,10 +1864,8 @@ object CalculatorEngine {
 		}
 		
 		// Use provided air exchange rate or default based on room type
-		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null) {
-			if (optionalAirExchangeRate <= 0) {
-				throw ArithmeticException("Air exchange rate must be positive if provided")
-			}
+		// If air_exchange_rate is null or 0, use recommended value for room type
+		val effectiveAirExchangeRate = if (optionalAirExchangeRate != null && optionalAirExchangeRate > 0) {
 			optionalAirExchangeRate
 		} else {
 			defaultAirExchangeRate
@@ -1562,12 +1911,14 @@ object CalculatorEngine {
 			appendLine()
 			appendLine("2. ОПРЕДЕЛЕНИЕ ПАРАМЕТРОВ ВОЗДУХООБМЕНА:")
 			appendLine("   Тип помещения: $roomTypeName")
-			if (optionalAirExchangeRate != null) {
+			appendLine("   Рекомендуемая кратность воздухообмена (по типу помещения): ${String.format("%.1f", defaultAirExchangeRate)} раз/ч")
+			if (optionalAirExchangeRate != null && optionalAirExchangeRate > 0) {
 				appendLine("   Кратность воздухообмена (задана вручную): ${String.format("%.1f", optionalAirExchangeRate)} раз/ч")
+				appendLine("   Используемая кратность: ${String.format("%.1f", effectiveAirExchangeRate)} раз/ч (используется заданное значение)")
 			} else {
-				appendLine("   Кратность воздухообмена (по типу помещения): ${String.format("%.1f", defaultAirExchangeRate)} раз/ч")
+				appendLine("   Кратность воздухообмена не задана, используется рекомендуемое значение")
+				appendLine("   Используемая кратность: ${String.format("%.1f", effectiveAirExchangeRate)} раз/ч (рекомендуемое для $roomTypeName)")
 			}
-			appendLine("   Используемая кратность: ${String.format("%.1f", effectiveAirExchangeRate)} раз/ч")
 			appendLine()
 			appendLine("   Норма воздуха на человека (по типу помещения): ${String.format("%.0f", airNormPerPerson)} м³/ч")
 			appendLine("   Количество людей: ${peopleCount.toInt()} чел")

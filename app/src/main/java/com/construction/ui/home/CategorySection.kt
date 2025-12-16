@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.construction.domain.model.CalculatorCategory
+import com.construction.domain.premium.AccessControl
 import com.construction.ui.util.CalculatorIcons
 
 /**
@@ -36,9 +37,19 @@ fun CategorySection(
 			verticalArrangement = Arrangement.spacedBy(8.dp)
 		) {
 			categories.forEach { category ->
+				// Check access before allowing navigation
+				// TODO: Enable Premium gating after RuStore billing launch
+				val hasAccess = AccessControl.isCategoryAccessible(category)
+				
 				CategoryItem(
 					category = category,
-					onClick = { onCategoryClick(category.id) }
+					onClick = {
+						if (hasAccess) {
+							onCategoryClick(category.id)
+						}
+						// If no access, PremiumStub would be shown in CategoryScreen
+						// Currently, hasAccess is always true since isPremiumUser = true
+					}
 				)
 			}
 		}

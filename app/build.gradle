@@ -6,8 +6,18 @@ plugins {
 // Load keystore properties if file exists
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
+def keystoreFileExists = false
 if (keystorePropertiesFile.exists()) {
 	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+	// Check if keystore file actually exists
+	def keystoreFileName = keystoreProperties['storeFile'] ?: ''
+	if (keystoreFileName) {
+		def keystoreFile = rootProject.file(keystoreFileName)
+		keystoreFileExists = keystoreFile.exists()
+		if (!keystoreFileExists) {
+			println "WARNING: Keystore file '${keystoreFileName}' not found. Release builds will not be signed."
+		}
+	}
 }
 
 android {
@@ -29,24 +39,39 @@ android {
 	
 	// Signing configurations
 	signingConfigs {
-		if (keystorePropertiesFile.exists()) {
-			release {
-				storeFile file(keystoreProperties['storeFile'])
-				storePassword keystoreProperties['storePassword']
-				keyAlias keystoreProperties['keyAlias']
-				keyPassword keystoreProperties['keyPassword']
+		// Only create signing config if both properties file and keystore file exist
+		if (keystorePropertiesFile.exists() && keystoreFileExists) {
+			def keystoreFileName = keystoreProperties['storeFile']
+			if (keystoreFileName) {
+				def keystoreFile = rootProject.file(keystoreFileName)
+				if (keystoreFile.exists()) {
+					release {
+						storeFile keystoreFile
+						storePassword keystoreProperties['storePassword']
+						keyAlias keystoreProperties['keyAlias']
+						keyPassword keystoreProperties['keyPassword']
+					}
+				}
 			}
 		}
 	}
+	
 	
 	buildTypes {
 		release {
 			// Enable minify for production release (optional, can be disabled for initial release)
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-			// Use signing config if keystore.properties exists
-			if (keystorePropertiesFile.exists()) {
-				signingConfig signingConfigs.release
+			// Use signing config only if keystore file actually exists
+			// Check again at build time to ensure file exists
+			if (keystorePropertiesFile.exists() && keystoreFileExists) {
+				def keystoreFileName = keystoreProperties['storeFile']
+				if (keystoreFileName) {
+					def keystoreFile = rootProject.file(keystoreFileName)
+					if (keystoreFile.exists() && signingConfigs.hasProperty('release')) {
+						signingConfig signingConfigs.release
+					}
+				}
 			}
 		}
 		debug {
@@ -76,6 +101,14 @@ android {
 		resources {
 			excludes += '/META-INF/{AL2.0,LGPL2.1}'
 		}
+	}
+}
+
+// Disable signing validation if keystore file doesn't exist
+// This prevents errors when building without keystore (e.g., when using Android Studio GUI)
+tasks.whenTaskAdded { task ->
+	if (task.name == 'validateSigningRelease' && !keystoreFileExists) {
+		task.enabled = false
 	}
 }
 

@@ -76,3 +76,5 @@ keytool -list -v -keystore construction-release.keystore
 - Используйте сильные пароли (минимум 12 символов)
 - Без keystore вы НЕ сможете обновлять приложение в RuStore!
 
+
+

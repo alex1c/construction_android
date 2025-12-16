@@ -10,8 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.construction.domain.premium.AccessControl
 import com.construction.domain.repository.CalculatorRepository
 import com.construction.ui.home.CalculatorList
+import com.construction.ui.premium.PremiumStub
 
 /**
  * Screen displaying calculators for a specific category.
@@ -35,6 +37,10 @@ fun CategoryScreen(
 		CalculatorRepository.getCalculatorsByCategory(categoryId)
 	}
 	
+	// Check access to category
+	// TODO: Enable Premium gating after RuStore billing launch
+	val hasAccess = category?.let { AccessControl.isCategoryAccessible(it) } ?: false
+	
 	Scaffold(
 		topBar = {
 			TopAppBar(
@@ -50,7 +56,14 @@ fun CategoryScreen(
 			)
 		}
 	) { paddingValues ->
-		if (calculators.isEmpty()) {
+		// Show PremiumStub if access is denied
+		// Currently, hasAccess is always true since isPremiumUser = true
+		if (!hasAccess && category != null) {
+			PremiumStub(
+				contentName = category.name,
+				onNavigateUp = onNavigateUp
+			)
+		} else if (calculators.isEmpty()) {
 			Box(
 				modifier = Modifier
 					.fillMaxSize()

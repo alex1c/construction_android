@@ -23,9 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.construction.R
-import com.construction.config.AppConfig
 import com.construction.domain.model.InputFieldDefinition
+import com.construction.domain.premium.AccessControl
+import com.construction.domain.repository.CalculatorRepository
 import com.construction.ui.calculator.buildShareText
+import com.construction.ui.premium.PremiumStub
 import com.construction.ui.util.CalculatorIcons
 import com.construction.util.ShareHelper
 
@@ -102,6 +104,22 @@ fun CalculatorScreen(
 				CircularProgressIndicator()
 			}
 		} else {
+			// Check access to calculator's category
+			// TODO: Enable Premium gating after RuStore billing launch
+			val category = remember(currentCalculator.categoryId) {
+				CalculatorRepository.getCategories().firstOrNull { it.id == currentCalculator.categoryId }
+			}
+			val hasAccess = category?.let { AccessControl.isCategoryAccessible(it) } ?: true
+			
+			// Show PremiumStub if access is denied
+			// Currently, hasAccess is always true since isPremiumUser = true
+			if (!hasAccess) {
+				PremiumStub(
+					contentName = currentCalculator.name,
+					onNavigateUp = onNavigateUp
+				)
+				return@Scaffold
+			}
 			Column(
 				modifier = Modifier
 					.fillMaxSize()
@@ -217,7 +235,9 @@ fun CalculatorScreen(
 						// Detailed calculation descriptions are hidden behind premium flag
 						if (field.id == "calculation_details") {
 							// Only show detailed descriptions when premium is enabled
-							if (AppConfig.premiumEnabled) {
+							// Currently always enabled for testing (will be controlled by RuStore Billing in future)
+							val premiumEnabled = true
+							if (premiumEnabled) {
 								val calculationDetails by viewModel.calculationDetails.collectAsState()
 								calculationDetails?.let { details ->
 									Card(
