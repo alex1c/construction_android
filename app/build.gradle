@@ -40,17 +40,29 @@ android {
 	// Signing configurations
 	signingConfigs {
 		// Only create signing config if both properties file and keystore file exist
+		// Backup disabled: app is stateless, no need for backup/restore
 		if (keystorePropertiesFile.exists() && keystoreFileExists) {
 			def keystoreFileName = keystoreProperties['storeFile']
 			if (keystoreFileName) {
 				def keystoreFile = rootProject.file(keystoreFileName)
-				if (keystoreFile.exists()) {
-					release {
-						storeFile keystoreFile
-						storePassword keystoreProperties['storePassword']
-						keyAlias keystoreProperties['keyAlias']
-						keyPassword keystoreProperties['keyPassword']
+				// Verify keystore file exists and is not a properties file
+				if (keystoreFile.exists() && !keystoreFileName.endsWith('.properties')) {
+					def keyAlias = keystoreProperties['keyAlias']
+					if (!keyAlias) {
+						println "ERROR: keyAlias not specified in keystore.properties"
+					} else {
+						release {
+							storeFile keystoreFile
+							storePassword keystoreProperties['storePassword']
+							keyAlias keyAlias
+							keyPassword keystoreProperties['keyPassword']
+						}
+						println "INFO: Signing config created with alias '${keyAlias}'"
 					}
+				} else if (!keystoreFile.exists()) {
+					println "WARNING: Keystore file '${keystoreFileName}' not found. Release builds will not be signed."
+				} else {
+					println "ERROR: Keystore file path '${keystoreFileName}' points to a properties file. This is invalid."
 				}
 			}
 		}
@@ -62,11 +74,13 @@ android {
 			// Enable minify for production release (optional, can be disabled for initial release)
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-			// Use signing config only if keystore file actually exists
-			// Check again at build time to ensure file exists
+            signingConfig signingConfigs.debug
+            // Use signing config only if keystore file actually exists
+			// Check again at build time to ensure file exists and is valid
+			// Backup disabled: app is stateless, no need for backup/restore
 			if (keystorePropertiesFile.exists() && keystoreFileExists) {
 				def keystoreFileName = keystoreProperties['storeFile']
-				if (keystoreFileName) {
+				if (keystoreFileName && !keystoreFileName.endsWith('.properties')) {
 					def keystoreFile = rootProject.file(keystoreFileName)
 					if (keystoreFile.exists() && signingConfigs.hasProperty('release')) {
 						signingConfig signingConfigs.release

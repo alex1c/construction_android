@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.construction.R
 import com.construction.domain.model.InputFieldDefinition
+import com.construction.domain.model.AccessLevel
 import com.construction.domain.premium.AccessControl
 import com.construction.domain.repository.CalculatorRepository
 import com.construction.ui.calculator.buildShareText
@@ -229,15 +230,19 @@ fun CalculatorScreen(
 						)
 					}
 					
+					// Check if calculator's category is FREE (Отделка и интерьер)
+					// Detailed calculation descriptions are shown only for FREE category
+					// TODO: Enable Premium gating after RuStore billing launch - show details for PREMIUM categories when user has subscription
+					val category = remember(currentCalculator.categoryId) {
+						CalculatorRepository.getCategories().firstOrNull { it.id == currentCalculator.categoryId }
+					}
+					val showCalculationDetails = category?.accessLevel == AccessLevel.FREE
+					
 					currentCalculator.resultFields.forEach { field ->
 						// Special handling for calculation_details field
-						// TODO: Enable after Premium feature launch
-						// Detailed calculation descriptions are hidden behind premium flag
 						if (field.id == "calculation_details") {
-							// Only show detailed descriptions when premium is enabled
-							// Currently always enabled for testing (will be controlled by RuStore Billing in future)
-							val premiumEnabled = true
-							if (premiumEnabled) {
+							// Only show detailed descriptions for FREE category (Отделка и интерьер)
+							if (showCalculationDetails) {
 								val calculationDetails by viewModel.calculationDetails.collectAsState()
 								calculationDetails?.let { details ->
 									Card(
