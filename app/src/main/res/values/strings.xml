@@ -23,8 +23,8 @@
     <string name="rustore_url">https://apps.rustore.ru/app/ru.calc1.construction</string>
     
     <!-- Version info -->
-    <string name="app_version">1.0.2</string>
-    <string name="app_version_code">3</string>
+    <string name="app_version">1.0.3</string>
+    <string name="app_version_code">4</string>
     
     <!-- RuStore publication info -->
     <string name="app_category">Инструменты</string>

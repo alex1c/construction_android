@@ -176,7 +176,7 @@ object CalculatorRepository {
 		return CalculatorDefinition(
 			id = "wallpaper",
 			categoryId = CATEGORY_FINISHING,
-			name = "Калькулятор количества обоев",
+			name = "Калькулятор обоев",
 			shortDescription = "Расчёт количества рулонов обоев для оклейки комнаты",
 			inputFields = listOf(
 				InputFieldDefinition(

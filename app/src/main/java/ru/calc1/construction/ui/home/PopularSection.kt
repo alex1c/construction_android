@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ru.calc1.construction.domain.model.CalculatorDefinition
 import ru.calc1.construction.ui.util.CalculatorIcons
@@ -82,24 +83,15 @@ private fun PopularCalculatorCard(
 				tint = Color(CalculatorIcons.getCategoryColor(calculator.categoryId))
 			)
 			
-			// Calculator name and description
-			Column(
-				horizontalAlignment = Alignment.CenterHorizontally
-			) {
-				Text(
-					text = calculator.name,
-					style = MaterialTheme.typography.titleMedium,
-					fontWeight = FontWeight.SemiBold,
-					maxLines = 2
-				)
-				Spacer(modifier = Modifier.height(4.dp))
-				Text(
-					text = calculator.shortDescription,
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant,
-					maxLines = 2
-				)
-			}
+			// Calculator name only (subtitle removed for cleaner UI)
+			Text(
+				text = calculator.name,
+				style = MaterialTheme.typography.titleMedium,
+				fontWeight = FontWeight.SemiBold,
+				maxLines = 2,
+				modifier = Modifier.fillMaxWidth(),
+				textAlign = TextAlign.Center
+			)
 		}
 	}
 }
